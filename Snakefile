@@ -87,7 +87,7 @@ rule extractNeoJunctions:
     shell:
         """
 mkdir -p $(dirname {output})
-sort -k9,9 <(samtools view {input.mate0} | perl scripts/neo.pl {input.junctions} 0) \
+sort  --parallel=8 -S4G -k9,9 <(samtools view {input.mate0} | perl scripts/neo.pl {input.junctions} 0) \
            <(samtools view {input.mate1} | perl scripts/neo.pl {input.junctions} 1) | grep -v GL > {output}        
 """
 
@@ -198,7 +198,7 @@ rule readsBed12ExtractJunctions:
         all = "data/{genome}/views/neo_junctions_bed/{id}.bed",
         intronic = "data/{genome}/views/neo_junctions_bed/{id}_intronic.bed"
     shell: """
-mkdir -p $(dirname {output})
+mkdir -p $(dirname {output.all})
 cat {input.bed} | python scripts/bed12_split_junctions.py | python scripts/bed12_filter_junctions.py --sjdb {input.junctions} |\
 sort-bed - > {output.all}
 bedops -e {output.all} {input.junctions} > {output.intronic}
