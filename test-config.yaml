@@ -13,6 +13,7 @@ samples:
     - data/fastq/RICseq_toy_rep2r1.fastq
 samples_RIC: ["RIC-seq_rep1", "RIC-seq_rep2"]
 samples_control: ["RNASeq_rep1", "RNASeq_rep2"]
+genome: "hg19_toy"
 star:
   program: "STAR"
   genome_path: "data/hg19/genome/index/"
