@@ -1,6 +1,8 @@
 # configfile: "config.yaml"
 
 localrules: filterPass1Junctions, mergeKnownJunctions, extractChimericJunctions, extractNeoJunctions, clusterDonorsAcceptors, clusterJunctions, extractContacts
+wildcard_constraints:
+    jtype="Neo|Chimeric"
 
 rule alignControlPE:
     input:
@@ -71,7 +73,7 @@ rule extractChimericJunctions:
     shell:
         """
 mkdir -p $(dirname {output})
-sort -k9,9 <(cut -f1-6,10 {input.mate0} | awk -v OFS="\t" 'BEGIN{{s["+"]="-";s["-"]="+";}}{{print $4, $5, $5+1, s[$6], $1, $2, $2+1, s[$3], $7, 0}}') \
+sort --parallel=8 -S4G -k9,9 <(cut -f1-6,10 {input.mate0} | awk -v OFS="\t" 'BEGIN{{s["+"]="-";s["-"]="+";}}{{print $4, $5, $5+1, s[$6], $1, $2, $2+1, s[$3], $7, 0}}') \
            <(cut -f1-6,10 {input.mate1} | awk -v OFS="\t" '{{print $1, $2, $2+1, $3, $4, $5, $5+1, $6, $7, 1}}') | \
            grep -v GL > {output}
 """
@@ -87,8 +89,9 @@ rule extractNeoJunctions:
     shell:
         """
 mkdir -p $(dirname {output})
-sort  --parallel=8 -S4G -k9,9 <(samtools view {input.mate0} | perl scripts/neo.pl {input.junctions} 0) \
-           <(samtools view {input.mate1} | perl scripts/neo.pl {input.junctions} 1) | grep -v GL > {output}        
+sort -k9,9  -S4G --parallel=8 <(samtools view {input.mate0} | perl scripts/neo.pl {input.junctions} 0) \
+           <(samtools view {input.mate1} | perl scripts/neo.pl {input.junctions} 1) | grep -v GL |\
+            awk -v 'OFS=\\t' '{{print $1,$2,$2+1,$3,$4,$5,$5+1,$6,$7,$8}}' > {output}       
 """
 
 rule clusterDonorsAcceptors:
@@ -204,6 +207,84 @@ sort-bed - > {output.all}
 bedops -e {output.all} {input.junctions} > {output.intronic}
 """
 
+rule junctionsToBedJ:
+    input:
+        tsv = "data/{genome}/junctions/{id}/{jtype}.tsv"
+    output:
+        bed = "data/{genome}/contacts_v2/{id}/{jtype}.bed"
+    shell: """
+mkdir -p $(dirname {output.bed})
+cat {input.tsv} | awk -v 'OFS=\\t' '$1==$5' | \
+cut -f1,2,4,7,9,10 |  \
+awk -v 'OFS=\\t' -v 'name_prefix={wildcards.id}_{wildcards.jtype}' '{{print $1,$2,$4,name_prefix"_"NR,1,$3,$5,$6}}' | \
+awk -v 'OFS=\\t' '{{if ($2 > $3){{t=$3;$3=$2;$2=t}}; print}}' |\
+awk -v 'OFS=\\t' '$2<$3' |\
+sort-bed - > {output.bed}
+"""
+
+rule filterContactsBothNeo:
+    input: 
+        contacts="data/{genome}/contacts_v2/{id}/{jtype_long}.bed",
+        junctions = "data/{genome}/introns.bed"
+    output: "data/{genome}/contacts_v2/{id}/{jtype_long}_neoR.bed"
+    shell: """
+mkdir -p $(dirname {output})
+cat {input.contacts} | python scripts/bedj_filter_junctions.py --sjdb {input.junctions} > {output}
+"""
+
+
+
+rule filterContactsByLength:
+    input: "data/{genome}/contacts_v2/{id}/{jtype_long}.bed",
+    output: "data/{genome}/contacts_v2/{id}/{jtype_long}_len{range,\d+}.bed"
+    shell: """
+mkdir -p $(dirname {output})
+awk -v 'OFS=\\t' '$3-$2<{wildcards.range}'  {input} > {output}
+"""
+
+rule filterContactsWIntrons:
+    input: 
+        contacts ="data/{genome}/contacts_v2/{id}/{jtype_long}.bed",
+        junctions = "data/{genome}/introns.bed"
+    output: "data/{genome}/contacts_v2/{id}/{jtype_long}_inIntrons.bed"
+    shell: """
+mkdir -p $(dirname {output})    
+bedops -e {input.contacts} {input.junctions} > {output}
+"""
+
+rule mergeChimericNeo:
+    input:
+        neo = "data/{genome}/contacts_v2/{id}/Neo_{other}.bed",
+        chim = "data/{genome}/contacts_v2/{id}/Chimeric_{other}.bed"
+    output: "data/{genome}/contacts_v2/{id}/All_{other}_merged.bed"
+    shell: """
+bedops -u {input.neo} {input.chim} > {output}
+"""
+
+rule mergeContacts:
+    input: "data/{genome}/contacts_v2/{id}/All_{other}.bed"
+    output: "data/{genome}/contacts_v2/{id}/All_{other}_aggregated.bed"
+    shell: """
+cut -f 1,2,3 {input} | sort | uniq -c | sed -r 's/([0-9]) /\\1\\t/' |\
+awk -v 'OFS=\\t' -v 'name_prefix=id' '{{print $2,$3,$4,name_prefix"_"NR,$1,"+"}}' |\
+sort-bed - > {output}
+"""
+
+rule prettyShowContacts:
+    input: "data/{genome}/contacts_v2/{id}/{jtype_longer}.bed"
+    output: "data/{genome}/contacts_v2/{id}/{jtype_longer}_view.bed"
+    shell: """
+cat {input} | python scripts/bedj_generate_view.py > {output}
+"""
+
+rule copyBedToHub:
+    input: "data/{genome}/contacts_v2/{id}/{jtype_longer}.bed"
+    output: "data/RIC-hub/{genome}/{id}/{jtype_longer}.bed"
+    shell: """
+mkdir -p $(dirname {output}) 
+cp -f {input} {output}
+"""
+
 
 rule allContacts:
     input:
@@ -228,3 +309,5 @@ rule allReadsWNeo:
 rule AllNeoJunctions:
     input: expand("data/{genome}/views/neo_junctions_bed/{id}_intronic.bed", genome = config['genome'], id=config['samples'].keys())
 
+rule contactsV2:
+    input: expand("data/RIC-hub/{genome}/{id}/All_len40000_inIntrons_neoR_merged_aggregated_view.bed", genome = config['genome'], id=config['samples'].keys())
