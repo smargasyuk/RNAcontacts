@@ -12,12 +12,15 @@ rule alignControlPE:
         genome = lambda wildcards: config['star']['genome_path']
     params:
         STAR = lambda wildcards: config['star']['program'],
-        out_prefix = lambda wildcards: f"{wildcards['project_prefix']}/bam/pass1/{wildcards['id']}",
-        STAR_params = '--runMode alignReads --outSAMtype BAM SortedByCoordinate',
+        out_prefix = lambda wildcards: f"{wildcards['project_prefix']}/bam/pass1/{wildcards['id']}/",
+        STAR_params = '--runMode alignReads --outSAMtype BAM SortedByCoordinate --readFilesCommand zcat',
 	runThreadN = lambda wildcards: config['star']['runThreadN']
     output:
         sj = "{project_prefix}/bam/pass1/{id}/SJ.out.tab"
     conda: "envs/env.yaml"
+    threads: 16
+    resources:
+        mem_mb=45000
     shell: 
         """
 mkdir -p $(dirname {output})
@@ -42,12 +45,15 @@ rule alignRICSE:
     params:
         STAR = lambda wildcards: config['star']['program'],
         out_prefix = lambda wildcards: f"{wildcards['project_prefix']}/bam/pass2/{wildcards['id']}_{wildcards['mate']}/",
-        STAR_params = '--runMode alignReads --outSAMtype BAM SortedByCoordinate --chimOutType Junctions --chimSegmentMin 15 --chimJunctionOverhangMin 15 --chimScoreJunctionNonGTAG  -1 --scoreGapNoncan -1 --scoreGapATAC -1 --scoreGapGCAG -1 --chimSegmentReadGapMax 3 --outFilterMatchNminOverLread 0.5 --outFilterScoreMinOverLread 0.5',
+        STAR_params = '--runMode alignReads --outSAMtype BAM SortedByCoordinate --chimOutType Junctions --chimSegmentMin 15 --chimJunctionOverhangMin 15 --chimScoreJunctionNonGTAG  -1 --scoreGapNoncan -1 --scoreGapATAC -1 --scoreGapGCAG -1 --chimSegmentReadGapMax 3 --outFilterMatchNminOverLread 0.5 --outFilterScoreMinOverLread 0.5 --readFilesCommand zcat',
         runThreadN = lambda wildcards: config['star']['runThreadN']
     output:
         bam = "{project_prefix}/bam/pass2/{id}_{mate}/Aligned.sortedByCoord.out.bam",
         chm = "{project_prefix}/bam/pass2/{id}_{mate}/Chimeric.out.junction"
     conda: "envs/env.yaml"
+    threads: 16
+    resources:
+        mem_mb=45000
     shell: 
         """
 mkdir -p $(dirname {output})
