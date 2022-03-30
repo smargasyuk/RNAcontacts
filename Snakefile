@@ -4,17 +4,19 @@ localrules: filterPass1Junctions, mergeKnownJunctions, extractChimericJunctions,
 wildcard_constraints:
     jtype="Neo|Chimeric"
 
+PROJECT_PREFIX = f"{config['genome']}/{config['project']}"
+
 rule alignControlPE:
     input:
         fastqs = lambda wildcards: config['samples'][wildcards["id"]],
         genome = lambda wildcards: config['star']['genome_path']
     params:
         STAR = lambda wildcards: config['star']['program'],
-        out_prefix = lambda wildcards: f"data/{wildcards['genome']}/bam/pass1/{wildcards['id']}/",
+        out_prefix = lambda wildcards: f"{wildcards['project_prefix']}/bam/pass1/{wildcards['id']}",
         STAR_params = '--runMode alignReads --outSAMtype BAM SortedByCoordinate',
 	runThreadN = lambda wildcards: config['star']['runThreadN']
     output:
-        sj = "data/{genome}/bam/pass1/{id}/SJ.out.tab"
+        sj = "{project_prefix}/bam/pass1/{id}/SJ.out.tab"
     conda: "envs/env.yaml"
     shell: 
         """
@@ -24,9 +26,9 @@ mkdir -p $(dirname {output})
 
 rule filterPass1Junctions:
     input:
-        "data/{genome}/bam/pass1/{id}/SJ.out.tab"
+        "{project_prefix}/bam/pass1/{id}/SJ.out.tab"
     output:
-        "data/{genome}/bam/pass1/{id}/SJ.out.filtered.tab"
+        "{project_prefix}/bam/pass1/{id}/SJ.out.filtered.tab"
     shell:
         """
 awk -v 'OFS="\t"' '$5 == 1' {input} > {output}
@@ -35,16 +37,16 @@ awk -v 'OFS="\t"' '$5 == 1' {input} > {output}
 rule alignRICSE:
     input:
         fastq = lambda wildcards: f'{config["samples"][wildcards["id"]][int(wildcards["mate"])]}',
-        junctions = lambda wildcards: expand("data/{genome}/bam/pass1/{id}/SJ.out.filtered.tab", id=config['samples_control'], genome=wildcards["genome"]),
+        junctions = lambda wildcards: expand("{project_prefix}/bam/pass1/{id}/SJ.out.filtered.tab", project_prefix = wildcards['project_prefix'], id=config['samples_control']),
         genome = lambda wildcards: config['star']['genome_path']
     params:
         STAR = lambda wildcards: config['star']['program'],
-        out_prefix = lambda wildcards: f"data/{wildcards['genome']}/bam/pass2/{wildcards['id']}_{wildcards['mate']}/",
+        out_prefix = lambda wildcards: f"{wildcards['project_prefix']}/bam/pass2/{wildcards['id']}_{wildcards['mate']}/",
         STAR_params = '--runMode alignReads --outSAMtype BAM SortedByCoordinate --chimOutType Junctions --chimSegmentMin 15 --chimJunctionOverhangMin 15 --chimScoreJunctionNonGTAG  -1 --scoreGapNoncan -1 --scoreGapATAC -1 --scoreGapGCAG -1 --chimSegmentReadGapMax 3 --outFilterMatchNminOverLread 0.5 --outFilterScoreMinOverLread 0.5',
         runThreadN = lambda wildcards: config['star']['runThreadN']
     output:
-        bam = "data/{genome}/bam/pass2/{id}_{mate}/Aligned.sortedByCoord.out.bam",
-        chm = "data/{genome}/bam/pass2/{id}_{mate}/Chimeric.out.junction"
+        bam = "{project_prefix}/bam/pass2/{id}_{mate}/Aligned.sortedByCoord.out.bam",
+        chm = "{project_prefix}/bam/pass2/{id}_{mate}/Chimeric.out.junction"
     conda: "envs/env.yaml"
     shell: 
         """
@@ -54,10 +56,10 @@ mkdir -p $(dirname {output})
 
 rule mergeKnownJunctions:
     input:
-        lambda wildcards: expand("data/{genome}/bam/pass1/{id}/SJ.out.tab", genome = config['genome'], id=config['samples_control']),
+        lambda wildcards: expand("{project_prefix}/bam/pass1/{id}/SJ.out.tab", project_prefix = wildcards['project_prefix'], id=config['samples_control']),
 	lambda wildcards: f"{config['star']['genome_path']}sjdbList.out.tab"
     output:
-        "data/{genome}/all_sj.tsv"
+        "{project_prefix}/all_sj.tsv"
     shell:
         """
 mkdir -p $(dirname {output})
@@ -66,10 +68,10 @@ cut -f1,2,3 {input} | sort -u > {output}
 
 rule extractChimericJunctions:
     input:
-        mate0 = "data/{genome}/bam/pass2/{id}_0/Chimeric.out.junction",
-        mate1 = "data/{genome}/bam/pass2/{id}_1/Chimeric.out.junction"
+        mate0 = "{project_prefix}/bam/pass2/{id}_0/Chimeric.out.junction",
+        mate1 = "{project_prefix}/bam/pass2/{id}_1/Chimeric.out.junction"
     output:
-        "data/{genome}/junctions/{id}/Chimeric.tsv"
+        "{project_prefix}/junctions/{id}/Chimeric.tsv"
     shell:
         """
 mkdir -p $(dirname {output})
@@ -80,11 +82,11 @@ sort --parallel=8 -S4G -k9,9 <(cut -f1-6,10 {input.mate0} | awk -v OFS="\t" 'BEG
 
 rule extractNeoJunctions:
     input:
-        mate0 = "data/{genome}/bam/pass2/{id}_0/Aligned.sortedByCoord.out.bam",
-	mate1 = "data/{genome}/bam/pass2/{id}_1/Aligned.sortedByCoord.out.bam",
-        junctions = "data/{genome}/all_sj.tsv"
+        mate0 = "{project_prefix}/bam/pass2/{id}_0/Aligned.sortedByCoord.out.bam",
+	mate1 = "{project_prefix}/bam/pass2/{id}_1/Aligned.sortedByCoord.out.bam",
+        junctions = "{project_prefix}/all_sj.tsv"
     output:
-        "data/{genome}/junctions/{id}/Neo.tsv"
+        "{project_prefix}/junctions/{id}/Neo.tsv"
     conda: "envs/env.yaml"
     shell:
         """
@@ -96,11 +98,11 @@ sort -k9,9  -S4G --parallel=8 <(samtools view {input.mate0} | perl scripts/neo.p
 
 rule clusterDonorsAcceptors:
     input:
-        lambda wildcards: expand("data/{genome}/junctions/{id}/{jtype}.tsv",
+        lambda wildcards: expand("{project_prefix}/junctions/{id}/{jtype}.tsv",
          id=config['samples'].keys(), jtype=["Neo", "Chimeric"], genome = config['genome'])
     output:
-        donors = "data/{genome}/junctions/donors.bed",
-        acceptors = "data/{genome}/junctions/acceptors.bed"
+        donors = "{project_prefix}/junctions/donors.bed",
+        acceptors = "{project_prefix}/junctions/acceptors.bed"
     params:
         radius = lambda wildcards: config['junctions_merge_radius']
     conda: "envs/env.yaml"
@@ -112,13 +114,13 @@ cut -f5-8 {input} | sort-bed - | bedops -m --range {params.radius} - > {output.a
 
 rule clusterJunctions:
     input:
-        junctions = "data/{genome}/junctions/{id}/{jtype}.tsv",
-	donors = "data/{genome}/junctions/donors.bed",
-	acceptors = "data/{genome}/junctions/acceptors.bed"
+        junctions = "{project_prefix}/junctions/{id}/{jtype}.tsv",
+	donors = "{project_prefix}/junctions/donors.bed",
+	acceptors = "{project_prefix}/junctions/acceptors.bed"
     params:
         radius = lambda wildcards: config['junctions_merge_radius']
     output:
-        "data/{genome}/clusters/{id}/{jtype}.tsv"
+        "{project_prefix}/clusters/{id}/{jtype}.tsv"
     conda: "envs/env.yaml"
     shell:
         """
@@ -130,9 +132,9 @@ intersectBed -a stdin -b {input.acceptors} -wa -wb | cut -f5- | sort -k1,1 > {ou
 
 rule extractContacts:
     input:
-        "data/{genome}/clusters/{id}/{jtype}.tsv",
+        "{project_prefix}/clusters/{id}/{jtype}.tsv",
     output:
-        "data/{genome}/contacts/{id}/{jtype}.tsv",
+        "{project_prefix}/contacts/{id}/{jtype}.tsv",
     shell:
         """
 mkdir -p $(dirname {output})
@@ -141,7 +143,7 @@ awk '{{n[$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10]++}}END{{for(j in n){{pri
 
 rule expandStructures:
     input: "data/input/known_structures.bed"
-    output: "data/{genome}/tmp/known_structures_{range}.bed"
+    output: "{project_prefix}/tmp/known_structures_{range}.bed"
     shell: """
 mkdir -p $(dirname {output})
 bedops -u --range {wildcards.range} {input} > {output}
@@ -149,11 +151,11 @@ bedops -u --range {wildcards.range} {input} > {output}
 
 rule readsNearStructures:
     input: 
-        bam="data/{genome}/bam/pass2/{id}_{mate}/Aligned.sortedByCoord.out.bam",
-        structures="data/{genome}/tmp/known_structures_{range}.bed"
+        bam="{project_prefix}/bam/pass2/{id}_{mate}/Aligned.sortedByCoord.out.bam",
+        structures="{project_prefix}/tmp/known_structures_{range}.bed"
     output:
-        bam = "data/{genome}/views/near_known_structure/{id}_{mate}_{range}.bam",
-        bed = "data/{genome}/views/near_known_structure/{id}_{mate}_{range}_split.bed"
+        bam = "{project_prefix}/views/near_known_structure/{id}_{mate}_{range}.bam",
+        bed = "{project_prefix}/views/near_known_structure/{id}_{mate}_{range}_split.bed"
     shell: """
 mkdir -p $(dirname {output.bam})
 samtools view -@4 -h -b -L {input.structures} {input.bam} > {output.bam}
@@ -163,10 +165,10 @@ paste <(bedtools bamtobed -bed12 -i {output.bam}) <(bedtools bamtobed -cigar -i 
 
 rule readsWNeoJunctions:
     input: 
-        bam="data/{genome}/bam/pass2/{id}_{mate}/Aligned.sortedByCoord.out.bam",
-        junctions = "data/{genome}/all_sj.tsv"
+        bam="{project_prefix}/bam/pass2/{id}_{mate}/Aligned.sortedByCoord.out.bam",
+        junctions = "{project_prefix}/all_sj.tsv"
     output:
-        "data/{genome}/views/reads_w_neo/{id}_{mate}_{range}.bam"
+        "{project_prefix}/views/reads_w_neo/{id}_{mate}_{range}.bam"
     shell:"""
 mkdir -p $(dirname {output})
 python scripts/reads_w_new_junctions.py --max-length {wildcards.range} {input.bam} {input.junctions} | samtools view -h -b - > {output}
@@ -174,10 +176,10 @@ python scripts/reads_w_new_junctions.py --max-length {wildcards.range} {input.ba
 
 rule mergePairedNeoReads:
     input:
-        bam0 = "data/{genome}/views/reads_w_neo/{id}_0_{range}.bam",
-        bam1 = "data/{genome}/views/reads_w_neo/{id}_1_{range}.bam"
+        bam0 = "{project_prefix}/views/reads_w_neo/{id}_0_{range}.bam",
+        bam1 = "{project_prefix}/views/reads_w_neo/{id}_1_{range}.bam"
     output:
-        "data/{genome}/views/reads_w_neo_bed/{id}_{range}.bed"
+        "{project_prefix}/views/reads_w_neo_bed/{id}_{range}.bed"
     shell: """
 mkdir -p $(dirname {output})
 sort-bed \
@@ -187,7 +189,7 @@ sort-bed \
 
 rule junctionsToIntronicBed:
     input: config['star']['genome_path'] + "/sjdbList.out.tab"
-    output: "data/{genome}/introns.bed"
+    output: "{project_prefix}/introns.bed"
     shell:"""
 mkdir -p $(dirname {output})
 awk -v 'OFS=\\t' '$3=$3+1' {input} | sort-bed - > {output}    
@@ -195,11 +197,11 @@ awk -v 'OFS=\\t' '$3=$3+1' {input} | sort-bed - > {output}
 
 rule readsBed12ExtractJunctions:
     input:
-        bed="data/{genome}/views/reads_w_neo_bed/{id}_-1.bed",
-        junctions='data/{genome}/introns.bed'
+        bed="{project_prefix}/views/reads_w_neo_bed/{id}_-1.bed",
+        junctions='{project_prefix}/introns.bed'
     output:
-        all = "data/{genome}/views/neo_junctions_bed/{id}.bed",
-        intronic = "data/{genome}/views/neo_junctions_bed/{id}_intronic.bed"
+        all = "{project_prefix}/views/neo_junctions_bed/{id}.bed",
+        intronic = "{project_prefix}/views/neo_junctions_bed/{id}_intronic.bed"
     shell: """
 mkdir -p $(dirname {output.all})
 cat {input.bed} | python scripts/bed12_split_junctions.py | python scripts/bed12_filter_junctions.py --sjdb {input.junctions} |\
@@ -209,9 +211,9 @@ bedops -e {output.all} {input.junctions} > {output.intronic}
 
 rule junctionsToBedJ:
     input:
-        tsv = "data/{genome}/junctions/{id}/{jtype}.tsv"
+        tsv = "{project_prefix}/junctions/{id}/{jtype}.tsv"
     output:
-        bed = "data/{genome}/contacts_v2/{id}/{jtype}.bed"
+        bed = "{project_prefix}/contacts_v2/{id}/{jtype}.bed"
     shell: """
 mkdir -p $(dirname {output.bed})
 cat {input.tsv} | awk -v 'OFS=\\t' '$1==$5' | \
@@ -224,9 +226,9 @@ sort-bed - > {output.bed}
 
 rule filterContactsBothNeo:
     input: 
-        contacts="data/{genome}/contacts_v2/{id}/{jtype_long}.bed",
-        junctions = "data/{genome}/introns.bed"
-    output: "data/{genome}/contacts_v2/{id}/{jtype_long}_neoR.bed"
+        contacts="{project_prefix}/contacts_v2/{id}/{jtype_long}.bed",
+        junctions = "{project_prefix}/introns.bed"
+    output: "{project_prefix}/contacts_v2/{id}/{jtype_long}_neoR.bed"
     shell: """
 mkdir -p $(dirname {output})
 cat {input.contacts} | python scripts/bedj_filter_junctions.py --sjdb {input.junctions} > {output}
@@ -235,8 +237,8 @@ cat {input.contacts} | python scripts/bedj_filter_junctions.py --sjdb {input.jun
 
 
 rule filterContactsByLength:
-    input: "data/{genome}/contacts_v2/{id}/{jtype_long}.bed",
-    output: "data/{genome}/contacts_v2/{id}/{jtype_long}_len{range,\d+}.bed"
+    input: "{project_prefix}/contacts_v2/{id}/{jtype_long}.bed",
+    output: "{project_prefix}/contacts_v2/{id}/{jtype_long}_len{range,\d+}.bed"
     shell: """
 mkdir -p $(dirname {output})
 awk -v 'OFS=\\t' '$3-$2<{wildcards.range}'  {input} > {output}
@@ -244,9 +246,9 @@ awk -v 'OFS=\\t' '$3-$2<{wildcards.range}'  {input} > {output}
 
 rule filterContactsWIntrons:
     input: 
-        contacts ="data/{genome}/contacts_v2/{id}/{jtype_long}.bed",
-        junctions = "data/{genome}/introns.bed"
-    output: "data/{genome}/contacts_v2/{id}/{jtype_long}_inIntrons.bed"
+        contacts ="{project_prefix}/contacts_v2/{id}/{jtype_long}.bed",
+        junctions = "{project_prefix}/introns.bed"
+    output: "{project_prefix}/contacts_v2/{id}/{jtype_long}_inIntrons.bed"
     shell: """
 mkdir -p $(dirname {output})    
 bedops -e {input.contacts} {input.junctions} > {output}
@@ -254,16 +256,16 @@ bedops -e {input.contacts} {input.junctions} > {output}
 
 rule mergeChimericNeo:
     input:
-        neo = "data/{genome}/contacts_v2/{id}/Neo_{other}.bed",
-        chim = "data/{genome}/contacts_v2/{id}/Chimeric_{other}.bed"
-    output: "data/{genome}/contacts_v2/{id}/All_{other}_merged.bed"
+        neo = "{project_prefix}/contacts_v2/{id}/Neo_{other}.bed",
+        chim = "{project_prefix}/contacts_v2/{id}/Chimeric_{other}.bed"
+    output: "{project_prefix}/contacts_v2/{id}/All_{other}_merged.bed"
     shell: """
 bedops -u {input.neo} {input.chim} > {output}
 """
 
 rule mergeContacts:
-    input: "data/{genome}/contacts_v2/{id}/All_{other}.bed"
-    output: "data/{genome}/contacts_v2/{id}/All_{other}_aggregated.bed"
+    input: "{project_prefix}/contacts_v2/{id}/All_{other}.bed"
+    output: "{project_prefix}/contacts_v2/{id}/All_{other}_aggregated.bed"
     shell: """
 cut -f 1,2,3 {input} | sort | uniq -c | sed -r 's/([0-9]) /\\1\\t/' |\
 awk -v 'OFS=\\t' -v 'name_prefix=id' '{{print $2,$3,$4,name_prefix"_"NR,$1,"+"}}' |\
@@ -271,14 +273,14 @@ sort-bed - > {output}
 """
 
 rule prettyShowContacts:
-    input: "data/{genome}/contacts_v2/{id}/{jtype_longer}.bed"
-    output: "data/{genome}/contacts_v2/{id}/{jtype_longer}_view.bed"
+    input: "{project_prefix}/contacts_v2/{id}/{jtype_longer}.bed"
+    output: "{project_prefix}/contacts_v2/{id}/{jtype_longer}_view.bed"
     shell: """
 cat {input} | python scripts/bedj_generate_view.py > {output}
 """
 
 rule copyBedToHub:
-    input: "data/{genome}/contacts_v2/{id}/{jtype_longer}.bed"
+    input: "{project_prefix}/contacts_v2/{id}/{jtype_longer}.bed"
     output: "data/RIC-hub/{genome}/{id}/{jtype_longer}.bed"
     shell: """
 mkdir -p $(dirname {output}) 
@@ -288,26 +290,26 @@ cp -f {input} {output}
 
 rule allContacts:
     input:
-        expand("data/{genome}/contacts/{id}/{jtype}.tsv", genome = config['genome'], id=config['samples'].keys(), jtype=["Neo", "Chimeric"]) 
+        expand("data/{project_prefix}/contacts/{id}/{jtype}.tsv", project_prefix=PROJECT_PREFIX, id=config['samples'].keys(), jtype=["Neo", "Chimeric"]) 
 
 
 rule getRICAligned:
     input:
-        expand("data/{genome}/bam/pass2/{id}_{mate}/Aligned.sortedByCoord.out.bam", genome = config['genome'], id=config['samples'].keys(), mate=[0,1])
+        expand("data/{project_prefix}/bam/pass2/{id}_{mate}/Aligned.sortedByCoord.out.bam", project_prefix=PROJECT_PREFIX, id=config['samples'].keys(), mate=[0,1])
 
 
 rule allReadsNearStructures:
     input: 
-        expand("data/{genome}/views/near_known_structure/{id}_{mate}_{range}.bam", genome = config['genome'], id=config['samples'].keys(), mate=[0,1], range=[1000, 10000, 30000])
+        expand("data/{project_prefix}/views/near_known_structure/{id}_{mate}_{range}.bam", project_prefix=PROJECT_PREFIX, id=config['samples'].keys(), mate=[0,1], range=[1000, 10000, 30000])
 
 
 rule allReadsWNeo:
     input: 
-        expand("data/{genome}/views/reads_w_neo_bed/{id}_{range}.bed", genome = config['genome'], id=config['samples'].keys(), range=[1000, 10000, 30000])
+        expand("data/{project_prefix}/views/reads_w_neo_bed/{id}_{range}.bed", project_prefix=PROJECT_PREFIX, id=config['samples'].keys(), range=[1000, 10000, 30000])
 
 
 rule AllNeoJunctions:
-    input: expand("data/{genome}/views/neo_junctions_bed/{id}_intronic.bed", genome = config['genome'], id=config['samples'].keys())
+    input: expand("data/{project_prefix}/views/neo_junctions_bed/{id}_intronic.bed", project_prefix=PROJECT_PREFIX, id=config['samples'].keys())
 
 rule contactsV2:
-    input: expand("data/RIC-hub/{genome}/{id}/All_len40000_inIntrons_neoR_merged_aggregated_view.bed", genome = config['genome'], id=config['samples'].keys())
+    input: expand("data/{project_prefix}/contacts_v2/{id}/All_len40000_inIntrons_neoR_merged_aggregated_view.bed", project_prefix=PROJECT_PREFIX, id=config['samples'].keys())
