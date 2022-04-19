@@ -1,3 +1,4 @@
+project: test
 samples:
   RNASeq_rep1:
     - data/fastq/RNAseq_toy_rep1r0.fastq
