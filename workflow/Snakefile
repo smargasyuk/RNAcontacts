@@ -1,0 +1,12 @@
+configfile: "config/config.yaml"
+
+include: "rules/common.smk"
+include: "rules/align.smk"
+
+
+print([row for row in samples.itertuples()])
+
+rule all:
+    input:
+        [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample}_{mate}/Aligned.sortedByCoord.out.bam"
+        for row in samples.itertuples() for mate in [0,1]]
