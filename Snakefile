@@ -4,6 +4,9 @@ localrules: filterPass1Junctions, mergeKnownJunctions, extractChimericJunctions,
 wildcard_constraints:
     jtype="Neo|Chimeric"
 
+import subprocess
+from pathlib import Path
+import distinctipy
 PROJECT_PREFIX = f"{config['genome']}/{config['project']}"
 
 rule alignControlPE:
@@ -105,7 +108,7 @@ sort -k9,9  -S4G --parallel=8 <(samtools view {input.mate0} | perl scripts/neo.p
 rule clusterDonorsAcceptors:
     input:
         lambda wildcards: expand("{project_prefix}/junctions/{id}/{jtype}.tsv",
-         id=config['samples'].keys(), jtype=["Neo", "Chimeric"], genome = config['genome'])
+         id=config['samples'].keys(), project_prefix=wildcards['project_prefix'], jtype=["Neo", "Chimeric"], genome = config['genome'])
     output:
         donors = "{project_prefix}/junctions/donors.bed",
         acceptors = "{project_prefix}/junctions/acceptors.bed"
@@ -278,6 +281,13 @@ awk -v 'OFS=\\t' -v 'name_prefix=id' '{{print $2,$3,$4,name_prefix"_"NR,$1,"+"}}
 sort-bed - > {output}
 """
 
+rule mergeProjectContacts:
+    input: lambda wildcards: expand("{project_prefix}/contacts_v2/{id}/All_len40000_inIntrons_neoR_merged_aggregated.bed", project_prefix=wildcards['project_prefix'], id=config["samples_RIC"])
+    output: "{project_prefix}/contacts_v2/AllContacts.bed"
+    shell: """
+sort-bed {input} > {output}
+"""
+
 rule prettyShowContacts:
     input: "{project_prefix}/contacts_v2/{id}/{jtype_longer}.bed"
     output: "{project_prefix}/contacts_v2/{id}/{jtype_longer}_view.bed"
@@ -285,13 +295,17 @@ rule prettyShowContacts:
 cat {input} | python scripts/bedj_generate_view.py > {output}
 """
 
-rule copyBedToHub:
-    input: "{project_prefix}/contacts_v2/{id}/{jtype_longer}.bed"
-    output: "data/RIC-hub/{genome}/{id}/{jtype_longer}.bed"
-    shell: """
-mkdir -p $(dirname {output}) 
-cp -f {input} {output}
-"""
+
+rule mergeReplicatesForView:
+    input: 
+        bed_files = lambda wildcards: expand("data/{project_prefix}/contacts_v2/{id}/All_len40000_inIntrons_neoR_merged_aggregated_view.bed", project_prefix=wildcards['project_prefix'], id=config['samples_RIC'])
+    output: "data/RIC-hub/input/{project_prefix}.bed"
+    run:
+        Path(str(output)).parent.mkdir(parents=True, exist_ok=True)
+        colors = distinctipy.get_colors(len(input.bed_files), pastel_factor=0.7)
+        color_strings = [','.join([str(int(i * 255)) for i in rgb_frac_tuple]) for rgb_frac_tuple in colors]
+        for idx, file in enumerate(input.bed_files):
+            subprocess.run(f"awk -v 'OFS=\\t' '$9=\"{color_strings[idx]}\"' {file} >> {output}", shell=True)
 
 
 rule allContacts:
@@ -318,4 +332,8 @@ rule AllNeoJunctions:
     input: expand("data/{project_prefix}/views/neo_junctions_bed/{id}_intronic.bed", project_prefix=PROJECT_PREFIX, id=config['samples'].keys())
 
 rule contactsV2:
-    input: expand("data/{project_prefix}/contacts_v2/{id}/All_len40000_inIntrons_neoR_merged_aggregated_view.bed", project_prefix=PROJECT_PREFIX, id=config['samples'].keys())
+    input: expand("data/{project_prefix}/contacts_v2/{id}/All_len40000_inIntrons_neoR_merged_aggregated_view.bed", project_prefix=PROJECT_PREFIX, id=config['samples'].keys()) + [f"data/{PROJECT_PREFIX}/contacts_v2/AllContacts.bed"]
+
+rule viewForHub:
+    input: f"data/RIC-hub/input/{PROJECT_PREFIX}.bed"
+
