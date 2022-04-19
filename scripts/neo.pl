@@ -9,8 +9,7 @@
 
 $BAM_FREAD1 = 0x40;
 $BAM_FREAD2 = 0x80;
-$BAM_REVERSE = 0x10;
-$BAM_SECONDARY = 0x100; 
+$BAM_FREVERSE = 0x10;
 
 open FILE, $ARGV[0];
 while($line=<FILE>) {
@@ -20,34 +19,28 @@ while($line=<FILE>) {
 }
 close FILE;
 
-$mate = $ARGV[1];
-
-
 @STRAND = ("+","-");
 while(<STDIN>) {
     ($id, $flag, $ref, $pos, $qual, $cigar) = split /\t/;
-    next if($flag & $BAM_SECONDARY); # skip secondary alignments
+    next if($flag & 0x100); # skip secondary alignments
 
-    $rev = ($flag & $BAM_REVERSE) ? 1 : 0; # read reverse complemented yes no
-    $str = $STRAND[($rev + $mate + 1) & 1]; # additionally reverse complement if mate0 
+    $rev = ($flag & $BAM_FREVERSE) ? 1 : 0; # reverse complemented yes no
+    $str = $STRAND[($rev + $ARGV[1] + 1) & 1]; # additionally reverse complement if mate1
 
     while($cigar=~/(\d+)(\w)/g) {
         $increment = $1;
         $operation = $2;
         if($operation eq 'M') {  
-            $pos += $increment;
+                $pos += $increment;
         }
         if($operation eq 'D') {  
-            $pos += $increment;
+                $pos += $increment;
         }
         if($operation eq 'N') {
-            $beg = $pos;
-            $end = $pos + $increment - 1;
-	    unless($intron{$ref}{$beg}{$end}) {
-		($beg, $end) = reverse ($beg, $end) if($str eq "-");
-            	print join("\t", $ref, $beg, $beg + 1, $str, $ref, $end, $end + 1, $str, $id, $mate), "\n";
-	    }
-            $pos += $increment; 
+                $beg = $pos;
+                $end = $pos + $increment - 1;
+                print join("\t", $ref, $beg, $str, $ref, $end, $str, $id, $ARGV[1]), "\n" unless($intron{$ref}{$beg}{$end});
+                $pos += $increment; 
         }
     }
 }
