@@ -1,7 +1,7 @@
 sample	project	genome	treatment	fq1	fq2
-RNASeq_HepG2_polyAplus_rep1	HepG2	hg19	control	fastq/HepG2/RNA-Seq/ENCFF000FVT.fastq.gz	fastq/HepG2/RNA-Seq/ENCFF000FVU.fastq.gz
-RNASeq_HepG2_polyAplus_rep2	HepG2	hg19	control	fastq/HepG2/RNA-Seq/ENCFF000FVI.fastq.gz	fastq/HepG2/RNA-Seq/ENCFF000FVV.fastq.gz
-RIC-seq_HepG2_rep1_batch1	HepG2	hg19	experiment	fastq/HepG2/25.HepG2_rep1/HepG2_rep1_batch1_read1.gz	fastq/HepG2/25.HepG2_rep1/HepG2_rep1_batch1_read2.gz
-RIC-seq_HepG2_rep1_batch2	HepG2	hg19	experiment	fastq/HepG2/25.HepG2_rep1/HepG2_rep1_batch2_read1.gz	fastq/HepG2/25.HepG2_rep1/HepG2_rep1_batch2_read2.gz
-RIC-seq_HepG2_rep2_batch1	HepG2	hg19	experiment	fastq/HepG2/26.HepG2_rep2/HepG2_rep2_batch1_read1.gz	fastq/HepG2/26.HepG2_rep2/HepG2_rep2_batch1_read2.gz
-RIC-seq_HepG2_rep2_batch2	HepG2	hg19	experiment	fastq/HepG2/26.HepG2_rep2/HepG2_rep2_batch2_read1.gz	fastq/HepG2/26.HepG2_rep2/HepG2_rep2_batch2_read2.gz 
+RNASeq_HepG2_polyAplus_rep1	HepG2	hg19	control	resources/fastq/HepG2/RNA-Seq/ENCFF000FVT.fastq.gz	resources/fastq/HepG2/RNA-Seq/ENCFF000FVU.fastq.gz
+RNASeq_HepG2_polyAplus_rep2	HepG2	hg19	control	resources/fastq/HepG2/RNA-Seq/ENCFF000FVI.fastq.gz	resources/fastq/HepG2/RNA-Seq/ENCFF000FVV.fastq.gz
+RIC-seq_HepG2_rep1_batch1	HepG2	hg19	experiment	resources/fastq/HepG2/25.HepG2_rep1/HepG2_rep1_batch1_read1.gz	resources/fastq/HepG2/25.HepG2_rep1/HepG2_rep1_batch1_read2.gz
+RIC-seq_HepG2_rep1_batch2	HepG2	hg19	experiment	resources/fastq/HepG2/25.HepG2_rep1/HepG2_rep1_batch2_read1.gz	resources/fastq/HepG2/25.HepG2_rep1/HepG2_rep1_batch2_read2.gz
+RIC-seq_HepG2_rep2_batch1	HepG2	hg19	experiment	resources/fastq/HepG2/26.HepG2_rep2/HepG2_rep2_batch1_read1.gz	resources/fastq/HepG2/26.HepG2_rep2/HepG2_rep2_batch1_read2.gz
+RIC-seq_HepG2_rep2_batch2	HepG2	hg19	experiment	resources/fastq/HepG2/26.HepG2_rep2/HepG2_rep2_batch2_read1.gz	resources/fastq/HepG2/26.HepG2_rep2/HepG2_rep2_batch2_read2.gz 

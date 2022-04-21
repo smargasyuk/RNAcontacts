@@ -2,3 +2,5 @@ samples: config/samples.tsv
 
 params:
   star2pass: '--chimSegmentMin 15 --chimJunctionOverhangMin 15 --chimScoreJunctionNonGTAG  -1 --scoreGapNoncan -1 --scoreGapATAC -1 --scoreGapGCAG -1 --chimSegmentReadGapMax 3 --outFilterMatchNminOverLread 0.5 --outFilterScoreMinOverLread 0.5'
+
+junctions_merge_radius: 10
