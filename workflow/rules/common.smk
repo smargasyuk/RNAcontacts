@@ -37,13 +37,20 @@ def get_pass2_sj(wildcards):
 def get_all_outputs(wildcards):
     bam = [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample}_{mate}/Aligned.sortedByCoord.out.bam" for row in samples.itertuples() for mate in [0,1]] 
     contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
-    return bam + contacts
+    global_contacts_view = [f"results/{row.genome}/{row.project}/views/global/contacts.bed" for row in samples.itertuples()]
+    return bam + contacts + global_contacts_view
 
 
 def get_known_junctions(wildcards):
     control_samples = samples.loc[(samples.treatment == "control") & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample"].to_list()
     return [f"results/{wildcards.genome}/{wildcards.project}/bam/pass1/{sample}/SJ.out.tab" for sample in control_samples] + [f"resources/star_genome/{wildcards.genome}/sjdbList.out.tab"]
 
+
 def get_all_junction_files(wildcards):
     relevant_samples = samples.loc[(samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample"].to_list()
     return [f"results/{wildcards['genome']}/{wildcards['project']}/junctions/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
+
+
+def get_all_clusters(wildcards):
+    relevant_samples = samples.loc[(samples.treatment == "experiment") & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample"].to_list()
+    return [f"results/{wildcards['genome']}/{wildcards['project']}/clusters/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]

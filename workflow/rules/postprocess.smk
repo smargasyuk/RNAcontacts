@@ -72,7 +72,7 @@ intersectBed -a stdin -b {input.donors} -wa -wb | cut -f5- | sort-bed - | \
 intersectBed -a stdin -b {input.acceptors} -wa -wb | cut -f5- | sort -k1,1 > {output}
 """
 
-rule extractContacts:
+rule extractContactsPerExperiment:
     input:
         "results/{genome}/{project}/clusters/{id}/{jtype}.tsv",
     output:
@@ -81,5 +81,26 @@ rule extractContacts:
     shell:
         """
 mkdir -p $(dirname {output})
-awk '{{n[$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10]++}}END{{for(j in n){{print j"\t"n[j]}}}}' {input} | sort > {output}
+awk '{{n[$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8]++}}END{{for(j in n){{print j"\t"n[j]}}}}' {input} | sort > {output}
+"""
+
+rule viewContactsGlobal:
+    input: get_all_clusters
+    output:
+       "results/{genome}/{project}/views/global/contacts.bed"  
+    conda: "../envs/postprocess.yaml"
+    params:
+        max_size = config['view_contacts_max_range']
+    shell:
+        """
+mkdir -p $(dirname {output})
+cat {input} |\
+cut -f 3- |\
+awk -v 'OFS=\t' '$1==$4' |\
+awk -v 'OFS=\t' '{{if ($2>$6){{s1=$2;s2=$3;$2=$5;$3=$6;$5=s1;$6=s2}};print}}' |\
+awk -v 'OFS=\t' '$2<$6' |\
+awk -v 'OFS=\t' '($3<$6) && ($2<$5) ' |\
+awk -v 'OFS=\t' '$6-$2<{params.max_size}' |\
+awk -v 'OFS=\t' '{{n[$1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6]++}}END{{for(j in n){{print j"\t"n[j]}}}}' |\
+awk -v 'OFS=\t' '{{print $1,$2,$6,"id_"NR",reads="$7,$7,"+",$2,$6,"0,0,0",2,$3-$2","$6-$5,0","$5-$2}}' | sort-bed - > {output}
 """
