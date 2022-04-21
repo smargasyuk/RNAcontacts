@@ -43,7 +43,11 @@ def get_all_outputs(wildcards):
 
 def get_known_junctions(wildcards):
     control_samples = samples.loc[(samples.treatment == "control") & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample"].to_list()
-    return [f"results/{wildcards.genome}/{wildcards.project}/bam/pass1/{sample}/SJ.out.tab" for sample in control_samples] + [f"resources/star_genome/{wildcards.genome}/sjdbList.out.tab"]
+    control_junctions = [f"results/{wildcards.genome}/{wildcards.project}/bam/pass1/{sample}/SJ.out.tab" for sample in control_samples]
+    return {
+        "control_jxn": control_junctions,
+        "star_ref_dir": f"resources/star_genome/{wildcards.genome}"
+    }
 
 
 def get_all_junction_files(wildcards):

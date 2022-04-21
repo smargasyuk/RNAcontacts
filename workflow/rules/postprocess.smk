@@ -1,12 +1,12 @@
 rule mergeKnownJunctions:
-    input: get_known_junctions
+    input: unpack(get_known_junctions)
     output:
         "results/{genome}/{project}/all_sj.tsv"
     conda: "../envs/postprocess.yaml"
     shell:
         """
 mkdir -p $(dirname {output})
-cut -f1,2,3 {input} | sort -u > {output}
+cut -f1,2,3 {input.control_jxn} {input.star_ref_dir}/sjdbList.out.tab | sort -u > {output}
 """
 
 rule extractChimericJunctions:
