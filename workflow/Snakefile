@@ -5,8 +5,6 @@ include: "rules/align.smk"
 include: "rules/postprocess.smk"
 
 
-print([row for row in samples.itertuples()])
-
 rule all:
     input: 
         contacts = get_all_outputs

@@ -36,8 +36,7 @@ def get_pass2_sj(wildcards):
 
 def get_all_outputs(wildcards):
     bam = [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample}_{mate}/Aligned.sortedByCoord.out.bam" for row in samples.itertuples() for mate in [0,1]] 
-    bam = []
-    contacts = [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample}_{mate}/Aligned.sortedByCoord.out.bam" for row in samples.itertuples() for mate in [0,1]] +  [f"results/{row.genome}/{row.project}/contacts/{row.sample}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
+    contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
     return bam + contacts
 
 
