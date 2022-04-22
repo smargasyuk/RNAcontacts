@@ -1,0 +1,20 @@
+samples: config/samples.tsv
+
+params:
+  # parameters for the second run of STAR
+  star2pass: '--chimSegmentMin 15 --chimJunctionOverhangMin 15 --chimScoreJunctionNonGTAG  -1 --scoreGapNoncan -1 --scoreGapATAC -1 --scoreGapGCAG -1 --chimSegmentReadGapMax 3 --outFilterMatchNminOverLread 0.5 --outFilterScoreMinOverLread 0.5'
+
+genomes:
+  # genome name as in sample sheet
+  hg38:
+    # Ensembl species name
+    species: homo_sapiens
+    # Ensembl release (make sure to take one where snpeff data is available, check 'snpEff databases' output)
+    release: 100
+    # Genome build
+    build: GRCh38
+
+# padding size for clustering of juction
+junctions_merge_radius: 10
+# length limit for contacts in BED12 view
+view_contacts_max_range: 50000

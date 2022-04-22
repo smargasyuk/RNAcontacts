@@ -1,0 +1,11 @@
+configfile: "config/config.yaml"
+
+include: "rules/common.smk"
+include: "rules/ref.smk"
+include: "rules/align.smk"
+include: "rules/postprocess.smk"
+
+
+rule all:
+    input: 
+        contacts = get_all_outputs
