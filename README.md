@@ -88,7 +88,7 @@ The files are as follows:
 
 The output of the pipeline consists of the following files:
  + `results/{genome}/{project}/{sample}/contacts` is the list of contacts and their respective read counts in tsv format (columns 1-3 and 4-6 are the contacting coordinates, column 7 is read count). 
- + `results/{genome}/{project}/views/global/contacts.bed` is the BED12 file with all contacts with length less than 
+ + `results/{genome}/{project}/views/global/contacts.bed` is the BED12 file with contacts on the same chromosome and length less than the threshold defined in `config`.
 
 
 
