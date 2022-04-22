@@ -10,12 +10,14 @@ This package contains a pipeline for prediction of RNA-RNA contacts from RIC-seq
 
 ### Step 1: Obtain a copy of this workflow
 
-1. [Clone](https://help.github.com/en/articles/cloning-a-repository) this repository to your local system, into the place where you want to perform the data analysis.
-
+[Clone](https://help.github.com/en/articles/cloning-a-repository) this repository to your local system, into the place where you want to perform the data analysis.
+    
+    git clone https://github.com/pervouchine/RIC-contacts.git
+    cd RIC-contacts
 
 ### Step 2: Configure workflow
 
-Configure the workflow according to your needs via editing the files in the `config/` folder. Adjust `config.yaml` to configure the workflow execution, and `samples.tsv` to specify your sample setup. The input files are in fastq format, currently two bioreplicates of rRNA depleted RIC-seq samples and two bioreplicates of rRNA depleted total RNA-seq. 
+Configure the workflow according to your needs via editing the files in the `config/` folder. Adjust `config.yaml` to configure the workflow execution, and `samples.tsv` to specify your sample setup.
 
 ### Step 3: Install Snakemake
 
