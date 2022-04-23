@@ -9,12 +9,12 @@ genomes:
   hg38:
     # Ensembl species name
     species: homo_sapiens
-    # Ensembl release (make sure to take one where snpeff data is available, check 'snpEff databases' output)
+    # Ensembl release
     release: 100
     # Genome build
     build: GRCh38
 
-# padding size for clustering of juction
+# padding size for junctions clustering
 junctions_merge_radius: 10
 # length limit for contacts in BED12 view
 view_contacts_max_range: 50000
