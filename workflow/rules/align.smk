@@ -6,7 +6,7 @@ rule align_pass1:
         bam="results/{genome}/{project}/bam/pass1/{sample}/Aligned.sortedByCoord.out.bam",
         sj="results/{genome}/{project}/bam/pass1/{sample}/SJ.out.tab",
     log:
-        "logs/{genome}/{project}/bam/pass1/{sample}/pass1/{sample}.log",
+        "logs/{genome}/{project}/bam/pass1/{sample}/Log.txt",
     params:
         index=lambda wc, input: input.index,
         extra="--outSAMtype BAM SortedByCoordinate"
@@ -36,7 +36,7 @@ rule align_pass2:
         bam = "results/{genome}/{project}/bam/pass2/{sample}_{mate}/Aligned.sortedByCoord.out.bam",
         chim_junc = "results/{genome}/{project}/bam/pass2/{sample}_{mate}/Chimeric.out.junction",
     log:
-        "logs/{genome}/{project}/bam/pass2/{sample}/pass1/{sample}_{mate}.log"
+        "logs/{genome}/{project}/bam/pass2/{sample}/Log.txt"
     params:
         index=lambda wc, input: input.index,
         extra=lambda wc, input:"--outSAMtype BAM SortedByCoordinate --chimOutType Junctions " + config['params']['star2pass'] 
