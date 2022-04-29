@@ -1,0 +1,5 @@
+hub RIC-contacts
+shortLabel RIC-contacts
+longLabel RIC-contacts
+genomesFile genomes.txt
+email smargasyuk@gmail.com

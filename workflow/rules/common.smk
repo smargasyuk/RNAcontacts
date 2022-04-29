@@ -1,6 +1,5 @@
-import glob
-
 import pandas as pd
+HUB_PATH = "results/trackhub"
 
 samples = (
     pd.read_csv(config["samples"], sep="\t")
@@ -38,7 +37,8 @@ def get_all_outputs(wildcards):
     bam = [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample_name}_{mate}/Aligned.sortedByCoord.out.bam" for row in samples.itertuples() for mate in [0,1]] 
     contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample_name}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
     global_contacts_view = [f"results/{row.genome}/{row.project}/views/global/contacts.bed" for row in samples.itertuples()]
-    return bam + contacts + global_contacts_view
+    global_junctions_view = [f"results/{row.genome}/{row.project}/views/global/junctions.bed" for row in samples.itertuples()]
+    return bam + contacts + global_contacts_view + global_junctions_view + all_hub_files()
 
 
 def get_known_junctions(wildcards):
@@ -55,6 +55,32 @@ def get_all_junction_files(wildcards):
     return [f"results/{wildcards['genome']}/{wildcards['project']}/junctions/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
 
 
+def get_project_samples(wildcards):
+    return samples.loc[(samples.treatment == "experiment") & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample_name"].to_list()
+
+
 def get_all_clusters(wildcards):
-    relevant_samples = samples.loc[(samples.treatment == "experiment") & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample_name"].to_list()
+    relevant_samples = get_project_samples(wildcards)
     return [f"results/{wildcards['genome']}/{wildcards['project']}/clusters/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
+
+
+def get_all_junctions(wildcards):
+    relevant_samples = get_project_samples(wildcards)
+    return [f"results/{wildcards['genome']}/{wildcards['project']}/junctions-view/{sample}/All_final.bed" for sample in relevant_samples]
+
+
+def get_all_genomes():
+    return samples.genome.unique().tolist()
+
+
+def get_genome_hub_files(wildcards):
+    relevant_projects = samples.loc[(samples.genome == wildcards["genome"])]["project"].to_list()
+    return [f"{wildcards['hub_prefix']}/{wildcards['genome']}/{project}.bb" for project in relevant_projects]
+
+
+def all_hub_files():
+    tracks = [f'{HUB_PATH}/{g}/tracks.txt' for g in get_all_genomes()]
+    static = [f'{HUB_PATH}/genomes.txt', f'{HUB_PATH}/hub.txt']
+    return tracks + static
+
+
