@@ -1,5 +1,7 @@
 # RIC-contacts
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6507594.svg)](https://doi.org/10.5281/zenodo.6507594)
+
 Prediction of RNA-RNA contacts from RIC-seq data. Developed by Sergei Margasyuk (smargasyuk@gmail.com) and Dmitri Pervouchine (pervouchine@gmail.com).
 
 ## Description
