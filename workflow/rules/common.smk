@@ -83,4 +83,11 @@ def all_hub_files():
     static = [f'{HUB_PATH}/genomes.txt', f'{HUB_PATH}/hub.txt']
     return tracks + static
 
+def get_genome_by_assembly(assembly):
+    for g_name, g_dict in config['genomes'].items():
+        if g_dict['assembly'] == assembly:
+            return g_name
+
+def get_assembly_by_genome(genome):
+    return config['genomes'][genome]['assembly']
 
