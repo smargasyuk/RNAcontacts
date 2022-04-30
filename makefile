@@ -11,5 +11,5 @@ test : resources/star_genome_input/test_hg19/genome.fasta
 
 
 config/samples.tsv resources/star_genome_input/test_hg19/genome.gtf resources/star_genome_input/test_hg19/genome.fasta:
-	wget http://arkuda.skoltech.ru/~smargasyuk/RIC-contacts/RICseq_toy_data_22.04.2022.tgz
-	tar -xf RICseq_toy_data_22.04.2022.tgz
+	wget https://zenodo.org/record/6475703/files/RICseq_toy_data.tgz
+	tar -xf RICseq_toy_data.tgz
