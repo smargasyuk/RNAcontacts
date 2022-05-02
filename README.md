@@ -92,7 +92,7 @@ The files are as follows:
 
 The output of the pipeline consists of the following files:
  + `results/{genome}/{project}/{sample}/contacts` is the list of contacts and their respective read counts in tsv format (columns 1-3 and 4-6 are the contacting coordinates, column 7 is read count). 
- + `results/{genome}/{project}/views/global/contacts.bed` is the BED12 file with contacts on the same chromosome and length less than the threshold defined in `config`.
+ + `results/{genome}/{project}/views/global/contacts.bed` is the BED12 file with contacts on the same chromosome and length less than the threshold defined in `config`. This file for HeLa experiment is available at [10.5281/zenodo.6511343](https://zenodo.org/record/6511343).
 
 
 
