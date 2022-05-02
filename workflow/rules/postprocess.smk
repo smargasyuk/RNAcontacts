@@ -84,16 +84,18 @@ mkdir -p $(dirname {output})
 awk '{{n[$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8]++}}END{{for(j in n){{print j"\t"n[j]}}}}' {input} | sort > {output}
 """
 
-rule viewContactsGlobal:
-    input: get_all_clusters
+rule viewContactsPerSample:
+    input: 
+        "results/{genome}/{project}/clusters/{id}/Neo.tsv",
+        "results/{genome}/{project}/clusters/{id}/Chimeric.tsv"
     output:
-       "results/{genome}/{project}/views/global/contacts.bed"  
+       "results/{genome}/{project}/views/per_sample/{id}/contacts.bed"  
     conda: "../envs/postprocess.yaml"
     params:
         max_size = config['view_contacts_max_range']
     shell:
         """
-mkdir -p $(dirname {output})
+mkdir -p $(dirname {output[0]})
 cat {input} |\
 cut -f 3- |\
 awk -v 'OFS=\t' '$1==$4' |\
@@ -103,4 +105,20 @@ awk -v 'OFS=\t' '($3<$6) && ($2<$5) ' |\
 awk -v 'OFS=\t' '$6-$2<{params.max_size}' |\
 awk -v 'OFS=\t' '{{n[$1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6]++}}END{{for(j in n){{print j"\t"n[j]}}}}' |\
 awk -v 'OFS=\t' '{{print $1,$2,$6,"id_"NR",reads="$7,$7,"+",$2,$6,"0,0,0",2,$3-$2","$6-$5,0","$5-$2}}' | sort-bed - > {output}
+"""
+
+rule viewContactsGlobal:
+    input: get_project_contact_bed_files
+    output:
+       "results/{genome}/{project}/views/global/contacts.bed"    
+    conda: "../envs/postprocess.yaml"
+    params:
+        max_size = config['view_contacts_max_range']
+    shell:
+        """
+mkdir -p $(dirname {output})
+echo 'track name="{wildcards.project} contacts" visibility=2 itemRgb="On"' > {output}
+python workflow/scripts/bed12_merge_color.py {input} | \
+sort-bed - |\
+awk -v 'OFS=\t' '$4="id_"NR",count="$5' >> {output}
 """

@@ -55,6 +55,6 @@ def get_all_junction_files(wildcards):
     return [f"results/{wildcards['genome']}/{wildcards['project']}/junctions/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
 
 
-def get_all_clusters(wildcards):
+def get_project_contact_bed_files(wildcards):
     relevant_samples = samples.loc[(samples.treatment == "experiment") & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample_name"].to_list()
-    return [f"results/{wildcards['genome']}/{wildcards['project']}/clusters/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
+    return [f"results/{wildcards['genome']}/{wildcards['project']}/views/per_sample/{id}/contacts.bed" for id in relevant_samples]
