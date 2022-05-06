@@ -22,15 +22,36 @@ trackDb {0}/tracks.txt
 
 rule copyJunctions:
     input: "results/{genome}/{project}/views/global/junctions.bed"
-    output: '{hub_prefix}/input/{genome}/{project}.bed'
+    output: '{hub_prefix}/input/raw/{genome}/{project}-junctions.bed'
     shell: """
 mkdir -p $(dirname {output})
 cp {input} {output}
 """
 
 
+rule copyContacts:
+    input: "results/{genome}/{project}/views/global/contacts.bed"
+    output: '{hub_prefix}/input/raw/{genome}/{project}-contacts.bed'
+    shell: """
+mkdir -p $(dirname {output})
+tail -n +2 {input} > {output}
+"""
+
+rule bedClip:
+    input: 
+        bed='{hub_prefix}/input/raw/{genome}/{fname}.bed',
+        chromsizes='{hub_prefix}/input/raw/{genome}/chromSizes',
+    output:
+        bed='{hub_prefix}/input/clipped/{genome}/{fname}.bed'
+    conda: "../envs/hub.yaml"
+    shell: """
+mkdir -p $(dirname {output})
+bedClip {input.bed} {input.chromsizes} {output}
+"""
+
+
 rule fetchChromSizes:
-    output: '{hub_prefix}/input/{genome}/chromSizes'
+    output: '{hub_prefix}/input/raw/{genome}/chromSizes'
     conda: "../envs/hub.yaml"
     shell: """
 mkdir -p $(dirname {output})
@@ -39,8 +60,8 @@ fetchChromSizes {wildcards.genome} > {output}
 
 
 rule sortBed:
-    input: '{hub_prefix}/input/{genome}/{fname}.bed'
-    output: '{hub_prefix}/input_sorted/{genome}/{fname}.bed'
+    input: '{hub_prefix}/input/clipped/{genome}/{fname}.bed',
+    output: '{hub_prefix}/input/sorted/{genome}/{fname}.bed'
     conda: "../envs/hub.yaml"
     shell: """
 mkdir -p $(dirname {output})
@@ -50,8 +71,8 @@ awk -v 'OFS=\\t' '$5=$5<999?$5:999' {input} | sort-bed - > {output}
 
 rule bed2bigbed:
     input: 
-        bed='{hub_prefix}/input_sorted/{genome}/{fname}.bed',
-        chromsizes='{hub_prefix}/input/{genome}/chromSizes',
+        bed='{hub_prefix}/input/sorted/{genome}/{fname}.bed',
+        chromsizes='{hub_prefix}/input/raw/{genome}/chromSizes',
     output: '{hub_prefix}/{genome}/{fname}.bb'
     conda: "../envs/hub.yaml"
     shell: """

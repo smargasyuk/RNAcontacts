@@ -39,7 +39,7 @@ def get_all_outputs(wildcards):
     bam = [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample_name}_{mate}/Aligned.sortedByCoord.out.bam" for row in samples.itertuples() for mate in [0,1]] 
     contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample_name}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
     global_contacts_view = [f"results/{row.genome}/{row.project}/views/global/contacts.bed" for row in samples.itertuples()]
-    return bam + contacts + global_contacts_view
+    return bam + contacts + global_contacts_view + all_hub_files() 
 
 
 def get_known_junctions(wildcards):
@@ -64,9 +64,11 @@ def get_all_clusters(wildcards):
     relevant_samples = get_project_samples(wildcards)
     return [f"results/{wildcards['genome']}/{wildcards['project']}/clusters/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
 
+
 def get_project_contact_bed_files(wildcards):
     relevant_samples = samples.loc[(samples.treatment == "experiment") & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample_name"].to_list()
     return [f"results/{wildcards['genome']}/{wildcards['project']}/views/per_sample/{id}/contacts.bed" for id in relevant_samples]
+
 
 def get_all_junctions(wildcards):
     relevant_samples = get_project_samples(wildcards)
@@ -78,8 +80,10 @@ def get_all_genomes():
 
 
 def get_genome_hub_files(wildcards):
-    relevant_projects = samples.loc[(samples.genome == wildcards["genome"])]["project"].to_list()
-    return [f"{wildcards['hub_prefix']}/{wildcards['genome']}/{project}.bb" for project in relevant_projects]
+    relevant_projects = samples.loc[(samples.genome == wildcards["genome"])]["project"].unique().tolist()
+    junctions = [f"{wildcards['hub_prefix']}/{wildcards['genome']}/{project}-junctions.bb" for project in relevant_projects]
+    contacts = [f"{wildcards['hub_prefix']}/{wildcards['genome']}/{project}-contacts.bb" for project in relevant_projects]
+    return contacts + junctions
 
 
 def all_hub_files():

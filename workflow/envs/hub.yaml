@@ -7,3 +7,4 @@ dependencies:
   - bedops =2.4.39
   - ucsc-fetchchromsizes =377
   - ucsc-bedtobigbed =377
+  - ucsc-bedclip =377
