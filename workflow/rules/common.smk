@@ -1,3 +1,5 @@
+import glob
+
 import pandas as pd
 HUB_PATH = "results/trackhub"
 
@@ -37,8 +39,7 @@ def get_all_outputs(wildcards):
     bam = [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample_name}_{mate}/Aligned.sortedByCoord.out.bam" for row in samples.itertuples() for mate in [0,1]] 
     contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample_name}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
     global_contacts_view = [f"results/{row.genome}/{row.project}/views/global/contacts.bed" for row in samples.itertuples()]
-    global_junctions_view = [f"results/{row.genome}/{row.project}/views/global/junctions.bed" for row in samples.itertuples()]
-    return bam + contacts + global_contacts_view + global_junctions_view + all_hub_files()
+    return bam + contacts + global_contacts_view
 
 
 def get_known_junctions(wildcards):
@@ -63,6 +64,9 @@ def get_all_clusters(wildcards):
     relevant_samples = get_project_samples(wildcards)
     return [f"results/{wildcards['genome']}/{wildcards['project']}/clusters/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
 
+def get_project_contact_bed_files(wildcards):
+    relevant_samples = samples.loc[(samples.treatment == "experiment") & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample_name"].to_list()
+    return [f"results/{wildcards['genome']}/{wildcards['project']}/views/per_sample/{id}/contacts.bed" for id in relevant_samples]
 
 def get_all_junctions(wildcards):
     relevant_samples = get_project_samples(wildcards)
@@ -90,4 +94,3 @@ def get_genome_by_assembly(assembly):
 
 def get_assembly_by_genome(genome):
     return config['genomes'][genome]['assembly']
-
