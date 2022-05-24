@@ -1,4 +1,3 @@
-
 channels:
   - bioconda
   - conda-forge
@@ -16,4 +15,5 @@ dependencies:
   - pipe =1.6.0
 
   - pip:
-     - distinctipy==1.2.1 
+     - distinctipy==1.2.1
+

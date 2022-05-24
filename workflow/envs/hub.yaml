@@ -1,0 +1,10 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - coreutils =9.1
+  - gawk =5.1.0
+  - bedops =2.4.39
+  - ucsc-fetchchromsizes =377
+  - ucsc-bedtobigbed =377
+  - ucsc-bedclip =377

@@ -7,12 +7,9 @@ params:
 genomes:
   # genome name as in sample sheet
   hg38:
-    # Ensembl species name
-    species: homo_sapiens
-    # Ensembl release
-    release: 100
-    # Genome build
-    build: GRCh38
+    assembly: GRCh38
+    # GENCODE, UCSC, Ensembl, or NCBI
+    provider: GENCODE
 
 # padding size for junctions clustering
 junctions_merge_radius: 10

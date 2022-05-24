@@ -3,7 +3,9 @@ configfile: "config/config.yaml"
 include: "rules/common.smk"
 include: "rules/ref.smk"
 include: "rules/align.smk"
-include: "rules/postprocess.smk"
+include: "rules/contacts.smk"
+include: "rules/junctions-view.smk"
+include: "rules/hub.smk"
 
 
 rule all:
