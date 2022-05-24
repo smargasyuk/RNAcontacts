@@ -1,3 +1,7 @@
+wildcard_constraints:
+    project='[\w-]*'
+
+
 rule mergeKnownJunctions:
     input: unpack(get_known_junctions)
     output:
@@ -27,7 +31,7 @@ sort --parallel=8 -S4G -k9,9 <(cut -f1-6,10 {input.mate0} | awk -v OFS="\t" 'BEG
 rule extractNeoJunctions:
     input:
         mate0 = "results/{genome}/{project}/bam/pass2/{id}_0/Aligned.sortedByCoord.out.bam",
-	mate1 = "results/{genome}/{project}/bam/pass2/{id}_1/Aligned.sortedByCoord.out.bam",
+	    mate1 = "results/{genome}/{project}/bam/pass2/{id}_1/Aligned.sortedByCoord.out.bam",
         junctions = "results/{genome}/{project}/all_sj.tsv"
     output:
         "results/{genome}/{project}/junctions/{id}/Neo.tsv"

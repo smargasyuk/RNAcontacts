@@ -4,6 +4,7 @@ include: "rules/common.smk"
 include: "rules/ref.smk"
 include: "rules/align.smk"
 include: "rules/contacts.smk"
+include: "rules/contacts-pooled.smk"
 include: "rules/junctions-view.smk"
 include: "rules/hub.smk"
 
@@ -11,3 +12,6 @@ include: "rules/hub.smk"
 rule all:
     input: 
         contacts = get_all_outputs
+
+rule hub:
+    input: all_hub_files

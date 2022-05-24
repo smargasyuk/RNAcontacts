@@ -8,6 +8,7 @@ dependencies:
   - samtools =1.15.1
   - bedtools =2.30.0
   - bedops =2.4.39
+  - parallel =20211222
 
   - python >=3.10
   - click =8.1.3

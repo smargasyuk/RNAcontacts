@@ -37,9 +37,13 @@ def get_pass2_sj(wildcards):
 
 def get_all_outputs(wildcards):
     bam = [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample_name}_{mate}/Aligned.sortedByCoord.out.bam" for row in samples.itertuples() for mate in [0,1]] 
-    contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample_name}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
-    global_contacts_view = [f"results/{row.genome}/{row.project}/views/global/contacts.bed" for row in samples.itertuples()]
-    return bam + contacts + global_contacts_view + all_hub_files() 
+    contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample_name}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]] # + ["results/test_hg19/global/pooled/contacts/Neo.tsv"]
+    global_contacts_view = [f"results/{row.genome}/{row.project}/views/global/contacts.bed" for row in samples.itertuples()] 
+
+    genomes = samples["genome"].unique().tolist()
+    pooled_contact_views = [f"results/{genome}/global/pooled/views/global/contacts.bed" for genome in genomes]
+
+    return bam + contacts + global_contacts_view  + pooled_contact_views
 
 
 def get_known_junctions(wildcards):
@@ -91,10 +95,45 @@ def all_hub_files():
     static = [f'{HUB_PATH}/genomes.txt', f'{HUB_PATH}/hub.txt']
     return tracks + static
 
+
 def get_genome_by_assembly(assembly):
     for g_name, g_dict in config['genomes'].items():
         if g_dict['assembly'] == assembly:
             return g_name
 
+
 def get_assembly_by_genome(genome):
     return config['genomes'][genome]['assembly']
+
+
+def get_pooled_known_junctions(wildcards):
+    control_samples = samples.loc[(samples.treatment == "control") & (samples.genome == wildcards["genome"]), ["sample_name", "project"]].itertuples(index=False, name=None)
+    control_junctions = [f"results/{wildcards.genome}/{project}/bam/pass1/{sample}/SJ.out.tab" for sample, project in control_samples]
+    return {
+        "control_jxn": control_junctions,
+        "star_ref_dir": f"resources/star_genome/{wildcards.genome}"
+    }
+    
+
+def get_project_experiments(wildcards):
+    return list(samples.loc[(samples.genome == wildcards["genome"]) & (samples.treatment == "experiment"), ["sample_name", "project"]].itertuples(index=False, name=None))
+
+def get_pooled_chim_files(wildcards):
+    project_samples = get_project_experiments(wildcards)
+    project_chim_0 = [f"results/{wildcards.genome}/{project}/bam/pass2/{sample}_0/Chimeric.out.junction" for sample, project in project_samples]
+    project_chim_1 = [f"results/{wildcards.genome}/{project}/bam/pass2/{sample}_1/Chimeric.out.junction" for sample, project in project_samples]
+    return {
+        "mate0": project_chim_0,
+        "mate1": project_chim_1 
+    }
+
+
+def get_pooled_bam_files(wildcards):
+    project_samples = get_project_experiments(wildcards)
+    project_chim_0 = [f"results/{wildcards.genome}/{project}/bam/pass2/{sample}_0/Aligned.sortedByCoord.out.bam" for sample, project in project_samples]
+    project_chim_1 = [f"results/{wildcards.genome}/{project}/bam/pass2/{sample}_1/Aligned.sortedByCoord.out.bam" for sample, project in project_samples]
+    return {
+        "mate0": project_chim_0,
+        "mate1": project_chim_1,
+        "junctions": f"results/{wildcards['genome']}/global/pooled/all_sj.tsv"
+    }
