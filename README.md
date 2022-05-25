@@ -16,6 +16,7 @@ This package contains a pipeline for prediction of RNA-RNA contacts from RIC-seq
     
     git clone https://github.com/pervouchine/RIC-contacts.git
     cd RIC-contacts
+    git checkout v0.2.2
 
 ### Step 2: Configure workflow
 
