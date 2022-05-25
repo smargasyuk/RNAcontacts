@@ -41,9 +41,9 @@ def get_all_outputs(wildcards):
     global_contacts_view = [f"results/{row.genome}/{row.project}/views/global/contacts.bed" for row in samples.itertuples()] 
 
     genomes = samples["genome"].unique().tolist()
-    pooled_contact_views = [f"results/{genome}/global/pooled/views/global/contacts.bed" for genome in genomes]
+    pooled_contacts = [f"results/{genome}/global/pooled/contacts/{jtype}.tsv" for genome in genomes for jtype in ["Neo", "Chimeric"]]
 
-    return bam + contacts + global_contacts_view  + pooled_contact_views
+    return bam + contacts + global_contacts_view  + pooled_contacts
 
 
 def get_known_junctions(wildcards):
