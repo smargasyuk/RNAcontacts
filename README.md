@@ -1,4 +1,4 @@
-# RIC-contacts
+# RNA-contacts
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6507594.svg)](https://doi.org/10.5281/zenodo.6507594)
 
@@ -13,9 +13,9 @@ This package contains a pipeline for prediction of RNA-RNA contacts from RIC-seq
 ### Step 1: Obtain a copy of this workflow
 
 [Clone](https://help.github.com/en/articles/cloning-a-repository) this repository to your local system, into the place where you want to perform the data analysis.
-    
-    git clone https://github.com/pervouchine/RIC-contacts.git
-    cd RIC-contacts
+
+    git clone https://github.com/smargasyuk/RNAcontacts.git
+    cd RNAcontacts
     git checkout v0.2.2
 
 ### Step 2: Configure workflow
@@ -73,6 +73,7 @@ update the config file, and execute the pipeline. The output files in `results/t
 Download the RIC-seq files for HeLa cell line from GEO repository [GSE127188](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE127188). Download the control RNA-seq files from ENCODE consortium [webpage](https://www.encodeproject.org/).
 
 The files are as follows:
+
 ```
   RNASeq_HeLa_total_rep1:
     - fastq/ENCFF000FOM.fastq
@@ -88,15 +89,9 @@ The files are as follows:
     - fastq/SRR8632821_2.fastq
 ```
 
-
 ### Step 5: Investigate results
 
 The output of the pipeline consists of the following files:
- + `results/{genome}/{project}/{sample}/contacts` is the list of contacts and their respective read counts in tsv format (columns 1-3 and 4-6 are the contacting coordinates, column 7 is read count). 
- + `results/{genome}/{project}/views/global/contacts.bed` is the BED12 file with contacts on the same chromosome and length less than the threshold defined in `config`. This file for HeLa experiment is available at [10.5281/zenodo.6511343](https://zenodo.org/record/6511343).
 
-
-
-
-
-
++ `results/{genome}/{project}/{sample}/contacts` is the list of contacts and their respective read counts in tsv format (columns 1-3 and 4-6 are the contacting coordinates, column 7 is read count). 
++ `results/{genome}/{project}/views/global/contacts.bed` is the BED12 file with contacts on the same chromosome and length less than the threshold defined in `config`. This file for HeLa experiment is available at [10.5281/zenodo.6511343](https://zenodo.org/record/6511343).
