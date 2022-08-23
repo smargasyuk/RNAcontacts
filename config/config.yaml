@@ -1,4 +1,5 @@
 samples: config/samples.tsv
+mode: "default"
 
 params:
   # parameters for the second run of STAR
@@ -10,6 +11,11 @@ genomes:
     assembly: GRCh38
     # GENCODE, UCSC, Ensembl, or NCBI
     provider: GENCODE
+
+  # dummy entry required for test
+  test_hg19:
+    assembly: ""
+    provider: ""
 
 # padding size for junctions clustering
 junctions_merge_radius: 10
