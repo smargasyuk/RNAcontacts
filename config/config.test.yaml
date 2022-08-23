@@ -1,16 +1,15 @@
-samples: config/samples.tsv
-mode: "default"
+samples: config/samples.test.tsv
+mode: "test"
 
 params:
   # parameters for the second run of STAR
   star2pass: '--chimSegmentMin 15 --chimJunctionOverhangMin 15 --chimScoreJunctionNonGTAG  -1 --scoreGapNoncan -1 --scoreGapATAC -1 --scoreGapGCAG -1 --chimSegmentReadGapMax 3 --outFilterMatchNminOverLread 0.5 --outFilterScoreMinOverLread 0.5'
 
 genomes:
-  # genome name as in sample sheet
-  hg38:
-    assembly: GRCh38
-    # GENCODE, UCSC, Ensembl, or NCBI
-    provider: GENCODE
+  # dummy entry required for test
+  test_hg19:
+    assembly: ""
+    provider: ""
 
 # padding size for junctions clustering
 junctions_merge_radius: 10

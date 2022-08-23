@@ -61,12 +61,10 @@ See the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/exe
 To make a test run, type
 
 ```
-make download
-make test
+snakemake --use-conda --configfile config/config.test.yaml -c8 test
 ```
 
-The script will download a toy dataset (sample sheet, truncated fastq files, genome, and genome annotation confined to the first 100MB of chr1), unpack, 
-update the config file, and execute the pipeline. The output files in `results/test_hg19/test/contacts` will be compared to those provided in the archive.
+The rule will download a toy dataset (sample sheet, truncated fastq files, genome, and genome annotation confined to the first 100MB of chr1), unpack, and execute the pipeline. The output files in `results/test_hg19/test/contacts` will be compared to those provided in the archive.
 
 #### Run on full RIC-seq data
 

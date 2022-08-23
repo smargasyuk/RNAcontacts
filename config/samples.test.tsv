@@ -1,0 +1,5 @@
+sample_name	project	genome	treatment	fq1	fq2
+RNASeq_rep1	test	test_hg19	control	resources/fastq/test/RNAseq_toy_rep1r0.fastq.gz	resources/fastq/test/RNAseq_toy_rep1r1.fastq.gz
+RNASeq_rep2	test	test_hg19	control	resources/fastq/test/RNAseq_toy_rep2r0.fastq.gz	resources/fastq/test/RNAseq_toy_rep2r1.fastq.gz
+RIC-seq_rep1	test	test_hg19	experiment	resources/fastq/test/RICseq_toy_rep1r0.fastq.gz	resources/fastq/test/RICseq_toy_rep1r1.fastq.gz
+RIC-seq_rep2	test	test_hg19	experiment	resources/fastq/test/RICseq_toy_rep2r0.fastq.gz	resources/fastq/test/RICseq_toy_rep2r1.fastq.gz
