@@ -5,6 +5,7 @@ include: "rules/align.smk"
 include: "rules/contacts.smk"
 include: "rules/junctions-view.smk"
 include: "rules/hub.smk"
+include: "rules/clean.smk"
 
 if config["mode"] == "test":
     include: "rules/test.smk"

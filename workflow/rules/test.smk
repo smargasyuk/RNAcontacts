@@ -24,5 +24,6 @@ rule test:
     run:
         for f1, f2 in zip(input["pipeline_out"], input["ref_out"]):
             if not filecmp.cmp(f1, f2, shallow = False):
-                raise ValueError(f"Files {f1} and {f2} are different")
+                print(f"Files {f1} and {f2} are different")
+                raise ValueError
         print("Test passed")
