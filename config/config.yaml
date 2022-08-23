@@ -13,6 +13,6 @@ genomes:
     provider: GENCODE
 
 # padding size for junctions clustering
-junctions_merge_radius: 10
+junctions_merge_radius: 5
 # length limit for contacts in BED12 view
 view_contacts_max_range: 50000
