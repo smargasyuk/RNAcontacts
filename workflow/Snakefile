@@ -1,14 +1,14 @@
 configfile: "config/config.yaml"
 
 include: "rules/common.smk"
-include: "rules/test.smk"
-# include: "rules/ref.smk"
 include: "rules/align.smk"
 include: "rules/contacts.smk"
 include: "rules/junctions-view.smk"
 include: "rules/hub.smk"
 
-if config["mode"] != "test":
+if config["mode"] == "test":
+    include: "rules/test.smk"
+else:
     include: "rules/ref.smk"
 
 
