@@ -1,4 +1,7 @@
+# path to sample sheet relative to workflow folder
 samples: config/samples.tsv
+
+# default or test, do not change!
 mode: "default"
 
 params:
@@ -8,9 +11,14 @@ params:
 genomes:
   # genome name as in sample sheet
   hg38:
+    # Assembly name (for genomepy)
     assembly: GRCh38
-    # GENCODE, UCSC, Ensembl, or NCBI
+    # GENCODE, UCSC, Ensembl, or NCBI (for genomepy)
     provider: GENCODE
+  hg19:
+    assembly: GRCh37
+    provider: GENCODE
+
 
 # padding size for junctions clustering
 junctions_merge_radius: 5

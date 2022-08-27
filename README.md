@@ -1,6 +1,4 @@
-# RNA-contacts
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6507594.svg)](https://doi.org/10.5281/zenodo.6507594)
+# RNAcontacts
 
 Prediction of RNA-RNA contacts from RIC-seq data. Developed by Sergei Margasyuk (smargasyuk@gmail.com) and Dmitri Pervouchine (pervouchine@gmail.com).
 
@@ -20,7 +18,7 @@ This package contains a pipeline for prediction of RNA-RNA contacts from RIC-seq
 
 ### Step 2: Configure workflow
 
-Configure the workflow according to your needs via editing the files in the `config/` folder. Adjust `config.yaml` to configure the workflow execution, and `samples.tsv` to specify your sample setup.
+Configure the workflow according to your needs via editing the files in the `config/` folder. Adjust `config.yaml` to configure the workflow execution, and `samples.tsv` to specify your sample setup (described in [Settings](config/README.md)).
 
 ### Step 3: Install Snakemake
 
@@ -74,22 +72,26 @@ The files are as follows:
 
 ```
   RNASeq_HeLa_total_rep1:
-    - fastq/ENCFF000FOM.fastq
-    - fastq/ENCFF000FOV.fastq
+    - ENCFF000FOM.fastq.gz
+    - ENCFF000FOV.fastq.gz
   RNASeq_HeLa_total_rep2:
-    - fastq/ENCFF000FOK.fastq
-    - fastq/ENCFF000FOY.fastq
+    - ENCFF000FOK.fastq.gz
+    - ENCFF000FOY.fastq.gz
   RIC-seq_HeLa_rRNA_depleted_rep1:
-    - fastq/SRR8632820_1.fastq
-    - fastq/SRR8632820_2.fastq
+    - SRR8632820_1.fastq.gz
+    - SRR8632820_2.fastq.gz
   RIC-seq_HeLa_rRNA_depleted_rep2:
-    - fastq/SRR8632821_1.fastq
-    - fastq/SRR8632821_2.fastq
+    - SRR8632821_1.fastq.gz
+    - SRR8632821_2.fastq.gz
 ```
+
+Put the files somewhere, fill the sample sheet (described in [Settings](config/README.md)), and run the pipeline.
 
 ### Step 5: Investigate results
 
 The output of the pipeline consists of the following files:
 
 + `results/{genome}/{project}/{sample}/contacts` is the list of contacts and their respective read counts in tsv format (columns 1-3 and 4-6 are the contacting coordinates, column 7 is read count). 
-+ `results/{genome}/{project}/views/global/contacts.bed` is the BED12 file with contacts on the same chromosome and length less than the threshold defined in `config`. This file for HeLa experiment is available at [10.5281/zenodo.6511343](https://zenodo.org/record/6511343).
++ `results/{genome}/{project}/views/global/contacts.bed` is the BED12 file with contacts on the same chromosome and length less than the threshold defined in `config`.
+
+These files for HeLa experiment are available at [10.5281/zenodo.6511342](https://doi.org/10.5281/zenodo.6511342).
