@@ -11,7 +11,8 @@ rule extract_test_data:
         fastq = expand("resources/fastq/test/{ftype}_toy_rep{i}r{j}.fastq.gz",
             ftype=["RNAseq", "RICseq"], i=[1,2], j=[0,1]),
         genome = expand("resources/star_genome_input/test_hg19/genome.{ext}", ext=["gtf", "fasta"]),
-        ref_output = directory("resources/test_results")
+        ref_out = expand("resources/test_results/test_hg19/test/contacts/{sample}/{ftype}.tsv",
+         sample=["RIC-seq_rep1", "RIC-seq_rep2"], ftype=["Chimeric", "Neo"])
     shell: "tar -xf RICseq_toy_data.tgz"
 
 
