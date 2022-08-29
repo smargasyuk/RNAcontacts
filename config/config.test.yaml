@@ -1,26 +1,17 @@
-# path to sample sheet relative to workflow folder
-samples: config/samples.tsv
-
-# default or test, do not change!
-mode: "default"
+samples: config/samples.test.tsv
+mode: "test"
 
 params:
   # parameters for the second run of STAR
   star2pass: '--chimSegmentMin 15 --chimJunctionOverhangMin 15 --chimScoreJunctionNonGTAG  -1 --scoreGapNoncan -1 --scoreGapATAC -1 --scoreGapGCAG -1 --chimSegmentReadGapMax 3 --outFilterMatchNminOverLread 0.5 --outFilterScoreMinOverLread 0.5'
 
 genomes:
-  # genome name as in sample sheet
-  hg38:
-    # Assembly name (for genomepy)
-    assembly: GRCh38
-    # GENCODE, UCSC, Ensembl, or NCBI (for genomepy)
-    provider: GENCODE
-  hg19:
-    assembly: GRCh37
-    provider: GENCODE
-
+  # dummy entry required for test
+  test_hg19:
+    assembly: ""
+    provider: ""
 
 # padding size for junctions clustering
-junctions_merge_radius: 5
+junctions_merge_radius: 10
 # length limit for contacts in BED12 view
 view_contacts_max_range: 50000
