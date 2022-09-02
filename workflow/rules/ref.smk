@@ -1,3 +1,5 @@
+localrules: genomepy, get_genome_and_annotation
+
 rule genomepy:
     output: multiext("resources/genomes/{assembly}/{assembly}", ".fa", ".fa.fai", ".fa.sizes", ".gaps.bed", ".annotation.gtf")
     params: 

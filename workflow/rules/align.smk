@@ -1,3 +1,5 @@
+localrules: filterPass1Junctions
+
 rule star_index:
     input:
         fasta="resources/star_genome_input/{genome}/genome.fasta",

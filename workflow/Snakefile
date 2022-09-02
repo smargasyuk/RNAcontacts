@@ -13,6 +13,10 @@ else:
     include: "rules/ref.smk"
 
 
+rule alignments:
+    input: get_all_alignments
+
+
 rule all:
     input: 
         contacts = get_all_outputs
