@@ -36,10 +36,13 @@ def get_pass2_sj(wildcards):
 
 
 def get_all_outputs(wildcards):
-    bam = [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample_name}_{mate}/Aligned.sortedByCoord.out.bam" for row in samples.itertuples() for mate in [0,1]] 
+    bam = get_all_alignments(wildcards)
     contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample_name}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
     global_contacts_view = [f"results/{row.genome}/{row.project}/views/global/contacts.bed" for row in samples.itertuples()]
     return bam + contacts + global_contacts_view + all_hub_files() 
+
+def get_all_alignments(wildcards):
+    return [f"results/{row.genome}/{row.project}/bam/pass2/{row.sample_name}_{mate}/Aligned.sortedByCoord.out.bam" for row in samples.itertuples() for mate in [0,1]] 
 
 
 def get_known_junctions(wildcards):
