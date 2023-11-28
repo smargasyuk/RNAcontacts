@@ -17,6 +17,9 @@ def get_pass1_fq(wildcards):
         "fq2": f"{fq.fq2}" 
     }
 
+def get_pass1_fq_for_adapterremoval(wildcards):
+    fq = samples.loc[(samples["sample_name"]  == wildcards["sample"]) & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"]), ["fq1", "fq2"]].iloc[0]
+    return [str(fq.fq1), str(fq.fq2)]
 
 def get_pass2_fq(wildcards):
     fq = samples.loc[(samples["sample_name"] == wildcards["sample"]) & (samples.project == wildcards["project"]) &
