@@ -17,6 +17,10 @@ rule alignments:
     input: get_all_alignments
 
 
+rule junctions:
+    input: get_all_junctions_target
+
+
 rule all:
     input: 
         contacts = get_all_outputs
