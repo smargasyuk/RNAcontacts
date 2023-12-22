@@ -58,7 +58,7 @@ def get_known_junctions(wildcards):
 
 
 def get_all_junctions_target(wildcards):
-    return [f"results/{row.genome}/{row.project}/junctions/{row.sample_name}/{jtype}.tsv.gz" for row in samples.loc[(samples.treatment == "control")].itertuples() for jtype in ["Neo", "Chimeric"]]
+    return [f"results/{row.genome}/{row.project}/junctions/{row.sample_name}/{jtype}.tsv.gz" for row in samples.loc[(samples.treatment == "experiment")].itertuples() for jtype in ["Neo", "Chimeric"]]
 
 
 def get_all_junction_files(wildcards):
