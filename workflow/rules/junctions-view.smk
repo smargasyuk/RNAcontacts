@@ -13,13 +13,13 @@ awk -v 'OFS=\\t' '$3=$3+1' {input} | sort-bed - > {output}
 
 rule junctionsToBedJ:
     input:
-        tsv = "results/{genome}/{project}/junctions/{id}/{jtype}.tsv"
+        tsv = "results/{genome}/{project}/junctions/{id}/{jtype}.tsv.gz"
     output:
         bed = "results/{genome}/{project}/junctions-view/{id}/{jtype}.bed"
     conda: "../envs/postprocess.yaml"
     shell: """
 mkdir -p $(dirname {output.bed})
-cat {input.tsv} | awk -v 'OFS=\\t' '$1==$5' | \
+unpigz -c {input.tsv} | awk -v 'OFS=\\t' '$1==$5' | \
 cut -f1,2,4,7,9,10 |  \
 awk -v 'OFS=\\t' -v 'name_prefix={wildcards.id}_{wildcards.jtype}' '{{print $1,$2,$4,name_prefix"_"NR,1,$3,$5,$6}}' | \
 awk -v 'OFS=\\t' '{{if ($2 > $3){{t=$3;$3=$2;$2=t}}; print}}' |\

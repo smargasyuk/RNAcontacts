@@ -17,6 +17,9 @@ def get_pass1_fq(wildcards):
         "fq2": f"{fq.fq2}" 
     }
 
+def get_pass1_fq_for_adapterremoval(wildcards):
+    fq = samples.loc[(samples["sample_name"]  == wildcards["sample"]) & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"]), ["fq1", "fq2"]].iloc[0]
+    return [str(fq.fq1), str(fq.fq2)]
 
 def get_pass2_fq(wildcards):
     fq = samples.loc[(samples["sample_name"] == wildcards["sample"]) & (samples.project == wildcards["project"]) &
@@ -37,7 +40,7 @@ def get_pass2_sj(wildcards):
 
 def get_all_outputs(wildcards):
     bam = get_all_alignments(wildcards)
-    contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample_name}/{jtype}.tsv" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
+    contacts = [f"results/{row.genome}/{row.project}/contacts/{row.sample_name}/{jtype}.tsv.gz" for row in samples.itertuples() for jtype in ["Neo", "Chimeric"]]
     global_contacts_view = [f"results/{row.genome}/{row.project}/views/global/contacts.bed" for row in samples.itertuples()]
     return bam + contacts + global_contacts_view + all_hub_files() 
 
@@ -54,9 +57,13 @@ def get_known_junctions(wildcards):
     }
 
 
+def get_all_junctions_target(wildcards):
+    return [f"results/{row.genome}/{row.project}/junctions/{row.sample_name}/{jtype}.tsv.gz" for row in samples.loc[(samples.treatment == "experiment")].itertuples() for jtype in ["Neo", "Chimeric"]]
+
+
 def get_all_junction_files(wildcards):
     relevant_samples = samples.loc[(samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample_name"].to_list()
-    return [f"results/{wildcards['genome']}/{wildcards['project']}/junctions/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
+    return [f"results/{wildcards['genome']}/{wildcards['project']}/junctions/{id}/{jtype}.tsv.gz" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
 
 
 def get_project_samples(wildcards):
@@ -65,7 +72,7 @@ def get_project_samples(wildcards):
 
 def get_all_clusters(wildcards):
     relevant_samples = get_project_samples(wildcards)
-    return [f"results/{wildcards['genome']}/{wildcards['project']}/clusters/{id}/{jtype}.tsv" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
+    return [f"results/{wildcards['genome']}/{wildcards['project']}/clusters/{id}/{jtype}.tsv.gz" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
 
 
 def get_project_contact_bed_files(wildcards):

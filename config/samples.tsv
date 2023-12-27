@@ -1,5 +1,5 @@
 sample_name	project	genome	treatment	fq1	fq2
-RNASeq_HeLa_total_rep1	HeLa	hg19	control	resources/fastq/HeLa/RNA-seq/ENCFF000FOM.fastq.gz	resources/fastq/HeLa/RNA-seq/ENCFF000FOV.fastq.gz
-RNASeq_HeLa_total_rep2	HeLa	hg19	control	resources/fastq/HeLa/RNA-seq/ENCFF000FOK.fastq.gz	resources/fastq/HeLa/RNA-seq/ENCFF000FOY.fastq.gz
-RIC-seq_HeLa_rRNA_depleted_rep1	HeLa	hg19	experiment	resources/fastq/HeLa/RIC-seq/SRR8632820_1.fastq.gz	resources/fastq/HeLa/RIC-seq/SRR8632820_2.fastq.gz
-RIC-seq_HeLa_rRNA_depleted_rep2	HeLa	hg19	experiment	resources/fastq/HeLa/RIC-seq/SRR8632821_1.fastq.gz	resources/fastq/HeLa/RIC-seq/SRR8632821_2.fastq.gz
+RNASeq_HeLa_total_rep1	HeLa	hg38	control	resources/fastq/HeLa/RNA-seq/ENCFF000FOM.fastq.gz	resources/fastq/HeLa/RNA-seq/ENCFF000FOV.fastq.gz
+RNASeq_HeLa_total_rep2	HeLa	hg38	control	resources/fastq/HeLa/RNA-seq/ENCFF000FOK.fastq.gz	resources/fastq/HeLa/RNA-seq/ENCFF000FOY.fastq.gz
+RIC-seq_HeLa_rRNA_depleted_rep1	HeLa	hg38	experiment	resources/fastq/HeLa/RIC-seq/SRR8632820_1.fastq.gz	resources/fastq/HeLa/RIC-seq/SRR8632820_2.fastq.gz
+RIC-seq_HeLa_rRNA_depleted_rep2	HeLa	hg38	experiment	resources/fastq/HeLa/RIC-seq/SRR8632821_1.fastq.gz	resources/fastq/HeLa/RIC-seq/SRR8632821_2.fastq.gz

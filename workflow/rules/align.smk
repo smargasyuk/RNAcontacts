@@ -15,9 +15,33 @@ rule star_index:
     wrapper:
         "0.84.0/bio/star/index"
 
+   
+rule fastp_pe:
+    input:
+        sample=get_pass1_fq_for_adapterremoval,
+    output:
+        trimmed=["results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}_0.fastq.gz",
+         "results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}_1.fastq.gz"],
+        unpaired1="results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}.u1.fastq",
+        unpaired2="results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}.u2.fastq",
+        failed="results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}.failed.fastq",
+        html="results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}.html",
+        json="results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}.json"
+    log:
+        "results/{genome}/{project}/fastq_trimmed/logs/fastp/pe/{sample}.log"
+    params:
+        extra='--detect_adapter_for_pe'
+    threads: 16
+    resources:
+        mem_mb=5000
+    wrapper:
+        "0.84.0/bio/fastp"
+
+
 rule align_pass1:
     input:
-        unpack(get_pass1_fq),
+        fq1="results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}_0.fastq.gz",
+        fq2="results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}_1.fastq.gz",
         index="resources/star_genome/{genome}",
     output:
         bam="results/{genome}/{project}/bam/pass1/{sample}/Aligned.sortedByCoord.out.bam",
@@ -31,7 +55,7 @@ rule align_pass1:
     resources:
         mem_mb=45000
     wrapper:
-        "0.84.0/bio/star/align"
+        "0.84.0/bio/star/align"  
 
 rule filterPass1Junctions:
     input:
@@ -46,7 +70,7 @@ awk -v 'OFS="\t"' '$5 == 1' {input} > {output}
 
 rule align_pass2:
     input:
-        fq1 = get_pass2_fq,
+        fq1 = "results/{genome}/{project}/fastq_trimmed/trimmed/pe/{sample}_{mate}.fastq.gz",
         sjdb = get_pass2_sj,
         index="resources/star_genome/{genome}"
     output:
@@ -62,5 +86,4 @@ rule align_pass2:
     resources:
         mem_mb=45000
     wrapper:
-        "0.84.0/bio/star/align"  
-
+        "0.84.0/bio/star/align"   
