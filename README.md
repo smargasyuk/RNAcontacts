@@ -54,17 +54,8 @@ or
 
 See the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/executable.html) for further details.
 
-#### Test run
 
-To make a test run, type
-
-```
-snakemake --use-conda --configfile config/config.test.yaml -c8 test
-```
-
-The rule will download a toy dataset (sample sheet, truncated fastq files, genome, and genome annotation confined to the first 100MB of chr1), unpack, and execute the pipeline. The output files in `results/test_hg19/test/contacts` will be compared to those provided in the archive.
-
-#### Run on full RIC-seq data
+#### Run on RIC-seq data
 
 Download the RIC-seq files for HeLa cell line from GEO repository [GSE127188](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE127188). Download the control RNA-seq files from ENCODE consortium [webpage](https://www.encodeproject.org/).
 
