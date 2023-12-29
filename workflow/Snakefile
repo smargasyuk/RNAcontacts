@@ -20,6 +20,9 @@ rule alignments:
 rule junctions:
     input: get_all_junctions_target
 
+rule contacts:
+    input: get_all_contacts_target
+
 
 rule all:
     input: 

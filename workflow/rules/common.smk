@@ -61,6 +61,10 @@ def get_all_junctions_target(wildcards):
     return [f"results/{row.genome}/{row.project}/junctions/{row.sample_name}/{jtype}.tsv.gz" for row in samples.loc[(samples.treatment == "experiment")].itertuples() for jtype in ["Neo", "Chimeric"]]
 
 
+def get_all_contacts_target(wildcards):
+    return [f"results/{row.genome}/{row.project}/contacts/{row.sample_name}/{jtype}.tsv.gz" for row in samples.loc[(samples.treatment == "experiment")].itertuples() for jtype in ["Neo", "Chimeric"]]
+
+
 def get_all_junction_files(wildcards):
     relevant_samples = samples.loc[(samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"])]["sample_name"].to_list()
     return [f"results/{wildcards['genome']}/{wildcards['project']}/junctions/{id}/{jtype}.tsv.gz" for id in relevant_samples for jtype in ["Neo", "Chimeric"]]
