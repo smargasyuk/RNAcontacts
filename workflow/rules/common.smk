@@ -2,6 +2,7 @@ import glob
 
 import pandas as pd
 HUB_PATH = "results/trackhub"
+PREFIX = config["root_dir"]
 
 samples = (
     pd.read_csv(config["samples"], sep="\t")

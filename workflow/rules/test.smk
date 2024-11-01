@@ -18,9 +18,9 @@ rule extract_test_data:
 
 rule test:
     input:
-        pipeline_out = expand("results/test_hg19/test/contacts/{sample}/{ftype}.tsv",
+        pipeline_out = expand("results/test_hg19/test/contacts/{sample}/{ftype}.tsv.gz",
          sample=["RIC-seq_rep1", "RIC-seq_rep2"], ftype=["Chimeric", "Neo"]),
-        ref_out = expand("resources/test_results/test_hg19/test/contacts/{sample}/{ftype}.tsv",
+        ref_out = expand("resources/test_results/test_hg19/test/contacts/{sample}/{ftype}.tsv.gz",
          sample=["RIC-seq_rep1", "RIC-seq_rep2"], ftype=["Chimeric", "Neo"])
     run:
         for f1, f2 in zip(input["pipeline_out"], input["ref_out"]):
