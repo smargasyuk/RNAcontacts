@@ -4,12 +4,13 @@ import pandas as pd
 HUB_PATH = "results/trackhub"
 PREFIX = config["root_dir"]
 
-samples = (
-    pd.read_csv(config["samples"], sep="\t")
-    .applymap(lambda x: x.strip() if isinstance(x, str) else x)
-    .set_index("sample_name", drop=False)
-)
+# samples = (
+#     pd.read_csv(config["samples"], sep="\t")
+#     .applymap(lambda x: x.strip() if isinstance(x, str) else x)
+#     .set_index("sample_name", drop=False)
+# )
 
+samples_table = pd.read_csv(config["samples"])
 
 def get_pass1_fq(wildcards):
     fq = samples.loc[(samples["sample_name"]  == wildcards["sample"]) & (samples.project == wildcards["project"]) & (samples.genome == wildcards["genome"]), ["fq1", "fq2"]].iloc[0]
@@ -31,13 +32,6 @@ def get_pass2_fq(wildcards):
         return f"{fq.fq2}" 
     else:
         raise Exception(f"Mate {wildcards['mate']} for sample {wildcards['sample']} not found")
-
-
-def get_pass2_sj(wildcards):
-    rows = samples.loc[(samples.treatment == "control") & (samples.project == wildcards["project"]) 
-        & (samples.genome == wildcards["genome"])]
-    return [f"results/{row.genome}/{row.project}/bam/pass1/{row.sample_name}/SJ.out.tab" for row in rows.itertuples()]
-
 
 def get_all_outputs(wildcards):
     bam = get_all_alignments(wildcards)
@@ -113,3 +107,64 @@ def get_genome_by_assembly(assembly):
 
 def get_assembly_by_genome(genome):
     return config['genomes'][genome]['assembly']
+
+
+def get_pass2_bam(wildcards):
+    st2 = samples_table.loc[samples_table["Organism"] == "Homo sapiens"].reset_index()
+    samples_pe = list(st2.loc[st2["LibraryLayout"] == "PAIRED"]['Run'].values)
+    files_pe = [PREFIX + f"/{assembly}/bam/pe/pass2/{sra_id}_{mate}/Aligned.sortedByCoord.out.bam" for mate in [1,2] for sra_id in samples_pe for assembly in [config["assembly"]]]
+    samples_se = list(st2.loc[st2["LibraryLayout"] == "SINGLE"]['Run'].values)
+    files_se = [PREFIX + f"/{assembly}/bam/se/pass2/{sra_id}/Aligned.sortedByCoord.out.bam" for sra_id in samples_se for assembly in [config["assembly"]]]
+    return files_pe + files_se
+
+def get_pass2_sj(wildcards):
+    rows = samples_table.copy()
+    rows["LibraryLayout"] = rows["LibraryLayout"].replace({"PAIRED" : "pe", "SINGLE": 'se'})
+    return [PREFIX + f"/{assembly}/bam/{row.LibraryLayout}/pass1/{row.Run}/SJ.out.tab"  for row in rows.itertuples() for assembly in [config["assembly"]]]
+
+def split_samples_by_layout():
+    st2 = samples_table.loc[samples_table["Organism"] == "Homo sapiens"].reset_index()
+    samples_pe = list(st2.loc[st2["LibraryLayout"] == "PAIRED"]['Run'].values)
+    samples_se = list(st2.loc[st2["LibraryLayout"] == "SINGLE"]['Run'].values)
+    return samples_pe, samples_se
+
+def get_all_sample_id_w_layout_idx():
+    samples_pe, samples_se = split_samples_by_layout()
+    return samples_se + [f"{s}_{l}" for s in samples_pe for l in [1,2]]
+
+def get_junction_files(wildcards):
+    sample_ids = get_all_sample_id_w_layout_idx()
+    return [PREFIX + f"/{assembly}/RNAcontacts/junctions/{file_id}/{jtype}.tsv.gz"  for file_id in sample_ids for assembly in [config["assembly"]] for jtype in ["Neo", "Chimeric"]]
+
+def get_sample_layout(file_id):
+
+    samples_pe, samples_se = split_samples_by_layout()
+    samples_pe = [f"{s}_{l}" for s in samples_pe for l in [1,2]]
+    
+    if file_id in samples_pe:
+        return "PE"
+    if file_id in samples_se:
+        return "SE"
+    raise KeyError("sample not found")
+        
+    
+def get_bam_file_by_junction_file(wildcards):
+
+    sample_layout = get_sample_layout(wildcards.file_id)
+    
+    if sample_layout == "PE":
+        return PREFIX + f"/{wildcards['assembly']}/bam/pe/pass2/{wildcards['file_id']}/Aligned.sortedByCoord.out.bam"
+    if sample_layout == "SE":
+        return PREFIX + f"/{wildcards['assembly']}/bam/se/pass2/{wildcards['file_id']}/Aligned.sortedByCoord.out.bam"
+
+
+def get_chim_file_by_junction_file(wildcards):
+
+    sample_layout = get_sample_layout(wildcards["file_id"])
+    
+    if sample_layout == "PE":
+        return PREFIX + f"/{wildcards['assembly']}/bam/pe/pass2/{wildcards['file_id']}/Chimeric.out.junction"
+    if sample_layout == "SE":
+        return PREFIX + f"/{wildcards['assembly']}/bam/se/pass2/{wildcards['file_id']}/Chimeric.out.junction"
+
+    

@@ -1,45 +1,52 @@
 rule mergeKnownJunctions:
-    input: unpack(get_known_junctions)
+    input: config["genomes_dir"] + "/{assembly}/star_genome/sjdbList.out.tab"
     output:
-        "results/{genome}/{project}/all_sj.tsv"
+        PREFIX + "/{assembly}/RNAcontacts/junctions/all_sj.tsv"
     conda: "../envs/postprocess.yaml"
     shell:
         """
 mkdir -p $(dirname {output})
-cut -f1,2,3 {input.control_jxn} {input.star_ref_dir}/sjdbList.out.tab | sort -u > {output}
+cut -f1,2,3 {input}| sort -u > {output}
 """
 
 rule extractChimericJunctions:
     input:
-        mate0 = "results/{genome}/{project}/bam/pass2/{id}_0/Chimeric.out.junction",
-        mate1 = "results/{genome}/{project}/bam/pass2/{id}_1/Chimeric.out.junction"
+        chim = get_chim_file_by_junction_file
     output:
-        "results/{genome}/{project}/junctions/{id}/Chimeric.tsv.gz"
+        jxn = PREFIX + "/{assembly}/RNAcontacts/junctions/{file_id}/Chimeric.tsv.gz"
     conda: "../envs/postprocess.yaml"
-    shell:
-        """
-mkdir -p $(dirname {output})
-sort --parallel=8 -S4G -k9,9 \
-           <(cut -f1-6,10 {input.mate0} | awk -v OFS="\t" 'BEGIN{{s["+"]="-";s["-"]="+";}}{{print $4, $5, $5+1, s[$6], $1, $2, $2+1, s[$3], $7, 0}}') \
-           <(cut -f1-6,10 {input.mate1} | awk -v OFS="\t" '{{print $1, $2, $2+1, $3, $4, $5, $5+1, $6, $7, 1}}') | \
-           grep -v GL | pigz > {output}
-"""
+    threads: 1
+    shell: """
+mkdir -p $(dirname {output.jxn})
+
+cut -f1-6,10 {input.chim} |\
+awk -v OFS="\t" '{{print $1, $2, $2+1, $3, $4, $5, $5+1, $6, $7}}' | \
+awk -v OFS="\t" '! index($1, "_")' |\
+awk -v OFS="\t" '! index($5, "_")' |\
+pigz -p {threads} > {output.jxn}
+"""        
 
 rule extractNeoJunctions:
     input:
-        mate0 = "results/{genome}/{project}/bam/pass2/{id}_0/Aligned.sortedByCoord.out.bam",
-	mate1 = "results/{genome}/{project}/bam/pass2/{id}_1/Aligned.sortedByCoord.out.bam",
-        junctions = "results/{genome}/{project}/all_sj.tsv"
+        bam = get_bam_file_by_junction_file,
+        ann_jxn = PREFIX + "/{assembly}/RNAcontacts/junctions/all_sj.tsv"
     output:
-        "results/{genome}/{project}/junctions/{id}/Neo.tsv.gz"
+        jxn = PREFIX + "/{assembly}/RNAcontacts/junctions/{file_id}/Neo.tsv.gz"
     conda: "../envs/postprocess.yaml"
-    shell:
-        """
-mkdir -p $(dirname {output})
-sort -k9,9  -S4G --parallel=8 <(samtools view {input.mate0} | perl workflow/scripts/neo.pl {input.junctions} 0) \
-           <(samtools view {input.mate1} | perl workflow/scripts/neo.pl {input.junctions} 1) | grep -v GL |\
-            awk -v 'OFS=\\t' '{{print $1,$2,$2+1,$3,$4,$5,$5+1,$6,$7,$8}}' | pigz > {output}       
+    threads: 1
+    shell: """
+mkdir -p $(dirname {output.jxn})
+
+samtools view {input.bam} |\
+perl workflow/scripts/neo.pl {input.ann_jxn} |\
+awk -v "OFS=\t" '{{print $1,$2,$2+1,$3,$4,$5,$5+1,$6,$7}}' |\
+awk -v OFS="\t" '! index($1, "_")' |\
+awk -v OFS="\t" '! index($5, "_")' |\
+pigz -p {threads} > {output.jxn}
 """
+
+rule jxn_step1:
+    input: get_junction_files
 
 rule clusterDonorsAcceptors:
     input: get_all_junction_files

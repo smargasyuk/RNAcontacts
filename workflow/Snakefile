@@ -7,10 +7,10 @@ include: "rules/junctions-view.smk"
 include: "rules/hub.smk"
 include: "rules/clean.smk"
 
-if config["mode"] == "test":
-    include: "rules/test.smk"
-else:
-    include: "rules/ref.smk"
+# if config["mode"] == "test":
+#     include: "rules/test.smk"
+# else:
+#     include: "rules/ref.smk"
 
 
 rule alignments:

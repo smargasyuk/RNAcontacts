@@ -3,8 +3,6 @@
 # This script reads a list of junctions from $ARGV[0] and parses 
 # a SAM from STDIN to extract and print neojunctions in STAR chimeric 
 # format: chr1 pos1 str1 chr2 pos2 str2 read_id
-# if $ARGV[1] is 1 then the strand is additionally flipped
-# P.S. is it better to flip mate1 instead of mate2?
 
 
 $BAM_FREAD1 = 0x40;
@@ -25,7 +23,7 @@ while(<STDIN>) {
     next if($flag & 0x100); # skip secondary alignments
 
     $rev = ($flag & $BAM_FREVERSE) ? 1 : 0; # reverse complemented yes no
-    $str = $STRAND[($rev + $ARGV[1] + 1) & 1]; # additionally reverse complement if mate1
+    $str = $STRAND[$rev]; # report reverse flag from BAM, do not flip it
 
     while($cigar=~/(\d+)(\w)/g) {
         $increment = $1;
@@ -39,7 +37,7 @@ while(<STDIN>) {
         if($operation eq 'N') {
                 $beg = $pos;
                 $end = $pos + $increment - 1;
-                print join("\t", $ref, $beg, $str, $ref, $end, $str, $id, $ARGV[1]), "\n" unless($intron{$ref}{$beg}{$end});
+                print join("\t", $ref, $beg, $str, $ref, $end, $str, $id), "\n" unless($intron{$ref}{$beg}{$end});
                 $pos += $increment; 
         }
     }
